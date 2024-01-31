@@ -453,7 +453,7 @@ class HomeController extends BaseController
             'persentase_potongan_kehadiran' => $data->jml_potongan_kehadiran_kerja,
             'bpjs' => $bpjs,
             'pphPsl' => $pphPsl,
-            'potongan_jkn_pph' => $pphPsl,
+            'potongan_jkn_pph' => $pphPsl + $bpjs,
             'nilai_bruto' => $tppBruto,
             'tpp_bulan_ini' => $tppNetto,
             'tppNetto' => $tppNetto,
