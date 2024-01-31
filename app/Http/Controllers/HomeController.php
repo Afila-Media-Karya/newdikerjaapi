@@ -298,9 +298,8 @@ class HomeController extends BaseController
             $potongan_sakit = 0;
         }
 
-        $potongan_masuk_kerja = ($kmk_30 * 0.5) + ($kmk_30_keatas * 1); 
-        $potongan_pulang_kerja = ($cpk_30 * 0.5) + ($cpk_30_keatas * 1); 
-        $potongan_tanpa_keterangan = $potongan_cuti_izin + $potongan_sakit + ($jml_alfa * 3);
+        $potongan_masuk_kerja = ($kmk_30 * 0.5) + ($kmk_60 * 1) + ($kmk_90 * 1.25) + ($kmk_90_keatas * 1.5); 
+        $potongan_pulang_kerja = ($cpk_30 * 0.5) + ($cpk_60 * 1) + ($cpk_90 * 1.25) + ($cpk_90_keatas * 1.5); 
         $potongan_tanpa_keterangan = $jml_alfa * 3;
         $potongan_apel = $jml_tidak_apel * 2;
         $jml_potongan_kehadiran_kerja = $potongan_tanpa_keterangan + $potongan_masuk_kerja + $potongan_pulang_kerja + $potongan_apel;
@@ -412,21 +411,11 @@ class HomeController extends BaseController
                 $nilai_kinerja = 100;
             }
 
-            if ($data->kelas_jabatan > 0 && $data->kelas_jabatan <= 10) {
-                $pembagi_nilai_kinerja = 30;
-                $pembagi_nilai_kehadiran = 70;
-            }elseif ($data->kelas_jabatan > 10 && $data->kelas_jabatan <= 12) {
-                $pembagi_nilai_kinerja = 50;
-                $pembagi_nilai_kehadiran = 50;
-            }else{
-                $pembagi_nilai_kinerja = 70;
-                $pembagi_nilai_kehadiran = 30;
-            }
 
             $nilaiPaguTpp = $data->pagu_tpp * $data->pembayaran / 100;
-            $nilai_kinerja_rp = $nilaiPaguTpp* $pembagi_nilai_kinerja/100; 
+            $nilai_kinerja_rp = $nilaiPaguTpp* 60/100; 
             $nilaiKinerja = $nilai_kinerja * $nilai_kinerja_rp / 100; 
-            $persentaseKehadiran = $pembagi_nilai_kehadiran * $nilaiPaguTpp / 100;
+            $persentaseKehadiran = 40 * $nilaiPaguTpp / 100;
             $nilaiKehadiran = $persentaseKehadiran * $data->jml_potongan_kehadiran_kerja / 100;
             $jumlahKehadiran = $persentaseKehadiran - $nilaiKehadiran;
             $bpjs = 1 * $nilaiPaguTpp / 100;
@@ -439,7 +428,7 @@ class HomeController extends BaseController
                 $iuran=0;
                 $brutoSpm=0;
             }else{
-                $tppBruto = $nilaiKinerja + $jumlahKehadiran;
+                $tppBruto = $nilaiKinerja + $jumlahKehadiran - $bpjs;
                 $brutoSpm = $nilaiKinerja + $jumlahKehadiran + $iuran;
             }
 
@@ -466,7 +455,7 @@ class HomeController extends BaseController
             'pphPsl' => $pphPsl,
             'potongan_jkn_pph' => $pphPsl,
             'nilai_bruto' => $tppBruto,
-            'tpp_bulan_ini' => ($persentaseKehadiran - $nilaiKehadiran) + $nilaiKinerja,
+            'tpp_bulan_ini' => $tppNetto,
             'tppNetto' => $tppNetto,
             'brutoSpm' => $brutoSpm,
             'nilaiPaguTpp' => $nilaiPaguTpp,
@@ -479,8 +468,8 @@ class HomeController extends BaseController
             'jml_tidak_apel' => $data->jml_tidak_apel,
             'jml_apel' => $data->jml_apel,
             'tanpa_keterangan' => $data->tanpa_keterangan,
-            'persen_pagu_kinerja' => $pembagi_nilai_kinerja,
-            'persen_pagu_kehadiran' => $pembagi_nilai_kehadiran,
+            'persen_pagu_kinerja' => 60,
+            'persen_pagu_kehadiran' => 40,
             'capaian_kinerja' => $nilaiKinerja,
         ];
             

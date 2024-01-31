@@ -13,9 +13,10 @@ use DB;
 class LoginController extends BaseController
 {
     public function signIn(LoginRequest $request){
+        // return $request;
         $path = explode('/', request()->path());
-        if (! Auth::attempt($request->only('username', 'password'))) {
 
+        if (!Auth::attempt($request->only('username', 'password'))) {
             return $this->sendError('Username atau password salah', 'Unauthorized',401);
         }
 
