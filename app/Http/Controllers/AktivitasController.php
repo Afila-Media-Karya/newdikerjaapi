@@ -66,13 +66,13 @@ class AktivitasController extends BaseController
             $jumlah_kinerja = $this->checkMenitKinerja($request->tanggal)->getData();
             $ax = $request->waktu + $jumlah_kinerja->data->count;
 
-            if ($ax > 360) {
-                $n_ = (360 - $jumlah_kinerja->data->count) - $request->waktu;
+            if ($ax > 420) {
+                $n_ = (420 - $jumlah_kinerja->data->count) - $request->waktu;
                 $waktu = $ax + $n_;
                 $waktu = $waktu - $jumlah_kinerja->data->count;  
 
                 if ($waktu <= 0 ) {
-                    return $this->sendError('Jumlah waktu sudah cukup 360 menit', 'Jumlah waktu sudah cukup 360 menit', 422);
+                    return $this->sendError('Jumlah waktu sudah cukup 420 menit', 'Jumlah waktu sudah cukup 420 menit', 422);
                 }
             }else{
                 $waktu = $request->waktu;
@@ -88,9 +88,9 @@ class AktivitasController extends BaseController
                 }
             }
 
-            if ($this->checkValidasiLimaHari($request->tanggal)) {
-                return $this->sendError('Tanggal aktivitas sudah lewat 5 hari', 'Tanggal aktivitas sudah lewat 5 hari', 422);
-            }
+            // if ($this->checkValidasiLimaHari($request->tanggal)) {
+            //     return $this->sendError('Tanggal aktivitas sudah lewat 5 hari', 'Tanggal aktivitas sudah lewat 5 hari', 422);
+            // }
 
             $checkAktivitasDuplicate = Aktivitas::where('aktivitas',$request->aktivitas)->where('keterangan',$request->keterangan)->whereDate('tanggal',$request->tanggal)->where('id_pegawai',Auth::user()->id_pegawai)->first();
 
