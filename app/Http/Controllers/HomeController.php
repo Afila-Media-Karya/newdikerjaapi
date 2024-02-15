@@ -355,7 +355,7 @@ class HomeController extends BaseController
             tb_master_jabatan.nama_jabatan,
             tb_master_jabatan.target_waktu,
             tb_master_jabatan.kelas_jabatan,
-            tb_master_jabatan.pagu_tpp,
+            tb_jabatan.pagu_tpp,
             tb_master_jabatan.jenis_jabatan,
             tb_master_jabatan.level_jabatan,
             tb_jabatan.pembayaran,
@@ -368,7 +368,7 @@ class HomeController extends BaseController
         ->join('tb_unit_kerja','tb_jabatan.id_unit_kerja','=','tb_unit_kerja.id')
         ->where('tb_pegawai.id', $findJabatan->id_pegawai)
         ->where('tb_jabatan.id_satuan_kerja', $findJabatan->satuan_kerja)
-        ->groupBy('tb_pegawai.id', 'tb_pegawai.nama', 'tb_pegawai.nip', 'tb_pegawai.golongan', 'tb_master_jabatan.nama_jabatan', 'tb_master_jabatan.target_waktu','tb_master_jabatan.kelas_jabatan','tb_master_jabatan.pagu_tpp','tb_master_jabatan.jenis_jabatan','tb_master_jabatan.level_jabatan','tb_jabatan.pembayaran','tb_unit_kerja.waktu_masuk','tb_unit_kerja.waktu_keluar')
+        ->groupBy('tb_pegawai.id', 'tb_pegawai.nama', 'tb_pegawai.nip', 'tb_pegawai.golongan', 'tb_master_jabatan.nama_jabatan', 'tb_master_jabatan.target_waktu','tb_master_jabatan.kelas_jabatan','tb_jabatan.pagu_tpp','tb_master_jabatan.jenis_jabatan','tb_master_jabatan.level_jabatan','tb_jabatan.pembayaran','tb_unit_kerja.waktu_masuk','tb_unit_kerja.waktu_keluar')
         ->first();
 
         $child = $this->data_kehadiran_pegawai($data->id,$tanggal_awal,$tanggal_akhir,$data->waktu_masuk,$data->waktu_keluar,$data->tipe_pegawai);
