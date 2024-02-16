@@ -10,7 +10,7 @@ trait Kinerja
         $data = array();
         try {
             $persentase = 0;
-            $jabatan = DB::table('tb_jabatan')->join("tb_master_jabatan",'tb_jabatan.id_master_jabatan','=','tb_master_jabatan.id')->select("tb_master_jabatan.target_waktu")->where('id_pegawai',Auth::user()->id_pegawai)->first();
+            $jabatan = DB::table('tb_jabatan')->join("tb_master_jabatan",'tb_jabatan.id_master_jabatan','=','tb_master_jabatan.id')->select("tb_jabatan.target_waktu")->where('id_pegawai',Auth::user()->id_pegawai)->first();
 
             $aktivitas = DB::table('tb_aktivitas')
             ->select(
