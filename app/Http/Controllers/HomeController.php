@@ -204,26 +204,30 @@ class HomeController extends BaseController
                     $selisih_waktu_pulang = $this->konvertWaktuNakes('keluar',$absen_per_tanggal[$tanggal]['waktu_keluar'],$tanggal,$absen_per_tanggal[$tanggal]['shift'],$waktu_tetap_keluar);
                 }
             
+                if ($absen_per_tanggal[$tanggal]['status'] !== 'cuti' && $absen_per_tanggal[$tanggal]['status'] !== 'dinas luar' && $absen_per_tanggal[$tanggal]['status'] !== 'sakit') {
 
-                if ($selisih_waktu_masuk >= 1 && $selisih_waktu_masuk <= 30) {
-                    $kmk_30 += 1;
-                } elseif ($selisih_waktu_masuk >= 31 && $selisih_waktu_masuk <= 60) {
-                    $kmk_60 += 1;
-                } elseif ($selisih_waktu_masuk >= 61 && $selisih_waktu_masuk <= 90) {
-                    $kmk_90 += 1;
-                } elseif ($selisih_waktu_masuk >= 91) {
-                    $kmk_90_keatas += 1;
+                    if ($selisih_waktu_masuk >= 1 && $selisih_waktu_masuk <= 30) {
+                        $kmk_30 += 1;
+                    } elseif ($selisih_waktu_masuk >= 31 && $selisih_waktu_masuk <= 60) {
+                        $kmk_60 += 1;
+                    } elseif ($selisih_waktu_masuk >= 61 && $selisih_waktu_masuk <= 90) {
+                        $kmk_90 += 1;
+                    } elseif ($selisih_waktu_masuk >= 91) {
+                        $kmk_90_keatas += 1;
+                    }
+
+                    if ($selisih_waktu_pulang >= 1 && $selisih_waktu_pulang <= 30) {
+                        $cpk_30 += 1;
+                    } elseif ($selisih_waktu_pulang >= 31 && $selisih_waktu_pulang <= 60) {
+                        $cpk_60 += 1;
+                    } elseif ($selisih_waktu_pulang >= 61 && $selisih_waktu_pulang <= 90) {
+                        $cpk_90 += 1;
+                    } elseif ($selisih_waktu_pulang >= 91) {
+                        $cpk_90_keatas += 1;
+                    }
                 }
 
-                if ($selisih_waktu_pulang >= 1 && $selisih_waktu_pulang <= 30) {
-                    $cpk_30 += 1;
-                } elseif ($selisih_waktu_pulang >= 31 && $selisih_waktu_pulang <= 60) {
-                    $cpk_60 += 1;
-                } elseif ($selisih_waktu_pulang >= 61 && $selisih_waktu_pulang <= 90) {
-                    $cpk_90 += 1;
-                } elseif ($selisih_waktu_pulang >= 91) {
-                    $cpk_90_keatas += 1;
-                }
+                
 
                 $waktu_pulang = $absen_per_tanggal[$tanggal]['waktu_keluar'];
 
