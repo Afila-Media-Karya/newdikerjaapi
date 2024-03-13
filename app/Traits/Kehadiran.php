@@ -244,6 +244,20 @@ trait Kehadiran
         return $menit;
     }
 
+    public function isRhamadan($tanggal)
+    {
+        // Ubah tanggal ke format yang sesuai untuk memeriksa bulan
+        $tanggal_awal_ramadan = '2024-03-12'; // Tanggal awal bulan Ramadan
+        $tanggal_akhir_ramadan = '2024-04-09'; // Tanggal akhir bulan Ramadan
+
+        // Periksa apakah tanggal berada dalam rentang bulan Ramadan
+        if ($tanggal >= $tanggal_awal_ramadan && $tanggal <= $tanggal_akhir_ramadan) {
+            return true; // Jika tanggal berada dalam rentang bulan Ramadan
+        } else {
+            return false; // Jika tanggal tidak berada dalam rentang bulan Ramadan
+        }
+    }
+
     public function konvertWaktu($params, $waktu, $tanggal,$waktu_default_absen,$tipe_pegawai)
     {
    
@@ -253,11 +267,24 @@ trait Kehadiran
 
         if ($waktu !== null) {
             if ($params == 'masuk') {
-                $waktu_tetap_absen = strtotime($waktu_default_absen);
+                $waktu_tetap_absen = '';
+                if (!$this->isRhamadan($tanggal)) {
+                    $waktu_tetap_absen = strtotime($waktu_default_absen);
+                }else {
+                    $waktu_tetap_absen = strtotime('08:00:00');
+                }
+
                 $waktu_absen = strtotime($waktu);
                 $diff = $waktu_absen - $waktu_tetap_absen;
             } else {
-                $waktu_checkout = $waktu_default_absen;
+                
+                $waktu_checkout = '';
+                if (!$this->isRhamadan($tanggal)) {
+                    $waktu_checkout = $waktu_default_absen;
+                }else {
+                    $waktu_checkout = '15:00:00';
+                }
+
                 $arr = $this->getDateRange();
                 $key = array_search($waktu, $arr);
 

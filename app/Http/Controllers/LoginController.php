@@ -9,9 +9,11 @@ use Auth;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use DB;
+use App\Traits\Kehadiran;
 
 class LoginController extends BaseController
 {
+    use Kehadiran;
     public function signIn(LoginRequest $request){
         // return $request;
         $path = explode('/', request()->path());
@@ -65,6 +67,21 @@ class LoginController extends BaseController
             ->join('tb_lokasi as tb_lokasi_apel', 'tb_jabatan.id_lokasi_apel', '=', 'tb_lokasi_apel.id')
             ->orderBy(DB::raw("FIELD(status_jabatan, 'pj', 'definitif', 'plt')"))
             ->first();
+
+            $tanggal_hari_ini = date('Y-m-d');
+            if ($this->isRhamadan($tanggal_hari_ini)) {
+                if ($data->tipe_pegawai == 'pegawai_administratif') {
+                    $data->waktu_masuk = '08:00:00';
+                    $data->waktu_keluar = date('N') == 5 ? '15:30:00' : '15:00:00';
+                    $data->waktu_apel = '08:00:00';
+                }else{
+                    $data->waktu_masuk = '08:00:00';
+                    $data->waktu_keluar = '13:00:00';
+                    $data->waktu_apel = '08:00:00';
+                }
+
+                
+            }
             
         } catch (\Exception $e) {
             return $this->sendError($e->getMessage(), $e->getMessage(), 200);

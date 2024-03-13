@@ -168,10 +168,10 @@ class HomeController extends BaseController
                     // Periksa jika status_absen bukan 'apel'
                     if (!in_array($tanggal, $this->getDateRange())) {
                             if ($absen_per_tanggal[$tanggal]['status'] !== 'apel' && $absen_per_tanggal[$tanggal]['status'] !== 'dinas luar' && $absen_per_tanggal[$tanggal]['status'] !== 'cuti' && $absen_per_tanggal[$tanggal]['status'] !== 'dinas luar') {
-                                if ($tipe_pegawai == 'pegawai_administratif') {
+                                if ($tipe_pegawai == 'pegawai_administratif' && !$this->isRhamadan($tanggalCarbon->toDateString())) {
                                     $jml_tidak_apel += 1;
                                 }elseif ($tipe_pegawai == 'tenaga_kesehatan') {
-                                    if ($absen_per_tanggal[$tanggal]['shift'] == 'pagi' && !$this->isTanggalLibur($tanggalCarbon->toDateString())) {
+                                    if ($absen_per_tanggal[$tanggal]['shift'] == 'pagi' && !$this->isTanggalLibur($tanggalCarbon->toDateString()) && !$this->isRhamadan($tanggalCarbon->toDateString())) {
                                         $jml_tidak_apel += 1;
                                     }
                                 }
