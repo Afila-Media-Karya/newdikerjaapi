@@ -68,6 +68,7 @@ class LoginController extends BaseController
             ->orderBy(DB::raw("FIELD(status_jabatan, 'pj', 'definitif', 'plt')"))
             ->first();
 
+            $data->limitPenginputan = 5;
             $tanggal_hari_ini = date('Y-m-d');
             if ($this->isRhamadan($tanggal_hari_ini)) {
                 if ($data->tipe_pegawai == 'pegawai_administratif') {
@@ -78,9 +79,7 @@ class LoginController extends BaseController
                     $data->waktu_masuk = '08:00:00';
                     $data->waktu_keluar = '13:00:00';
                     $data->waktu_apel = '08:00:00';
-                }
-
-                
+                }                
             }
             
         } catch (\Exception $e) {
