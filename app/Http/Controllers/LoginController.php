@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use DB;
 use App\Traits\Kehadiran;
+use Carbon\Carbon;
 
 class LoginController extends BaseController
 {
@@ -75,7 +76,7 @@ class LoginController extends BaseController
                 if ($data->tipe_pegawai == 'pegawai_administratif') {
                     $data->waktu_masuk = '08:00:00';
                     $data->waktu_keluar = date('N') == 5 ? '15:30:00' : '15:00:00';
-                    $data->waktu_apel = '08:00:00';
+                    $data->waktu_apel = Carbon::parse($tanggal)->dayOfWeek === Carbon::MONDAY ? '07:15:00' : '08:00:00';
                 }else{
                     $data->waktu_masuk = '08:00:00';
                     $data->waktu_keluar = '13:00:00';
