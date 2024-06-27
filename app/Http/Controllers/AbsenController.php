@@ -108,7 +108,7 @@ class AbsenController extends BaseController
         if (date('D', strtotime($date)) == 'Sun') {
             $data = null;
         }else{
-            $data = DB::table('tb_absen')->join('tb_pegawai','tb_absen.id_pegawai','=','tb_pegawai.id')->select('tb_absen.status','tb_pegawai.nip','tb_absen.tanggal_absen')->where('tb_absen.id_pegawai',Auth::user()->id_pegawai)->where('tanggal_absen',$date)->first();
+            $data = DB::table('tb_absen')->join('tb_pegawai','tb_absen.id_pegawai','=','tb_pegawai.id')->select('tb_absen.status','tb_pegawai.nip','tb_absen.tanggal_absen','waktu_masuk_istirahat','waktu_istirahat')->where('tb_absen.id_pegawai',Auth::user()->id_pegawai)->where('tanggal_absen',$date)->first();
         }
         return $data;
     }
@@ -118,11 +118,8 @@ class AbsenController extends BaseController
         try {
             $validation = 0;
             $status = strtolower($request->status);
+            $check_absen = $this->checkAbsenByTanggal();
             if ($request->jenis === 'datang') {
-
-                $check_absen = $this->checkAbsenByTanggal();
-                
-                if (is_null($check_absen)) {
                     $data = new Absen;
                     $waktu_keluar = null;
                     if ($status == 'hadir' || $status == 'apel') {
@@ -145,28 +142,45 @@ class AbsenController extends BaseController
                         }
                     }
 
-                    $data->id_pegawai = Auth::user()->id_pegawai;
-                    $data->waktu_masuk = $request->waktu_masuk;
-                    $data->waktu_keluar = $waktu_keluar;
-                    $data->tanggal_absen = date('Y-m-d');
-                    $data->status = $status;
-                    $data->tahun = date('Y');
-                    $data->validation = $validation;
-                    $data->user_type = 0;
+                    if ($status !== 'masuk_istirahat') {
+                        if (is_null($check_absen)) {
+                            $data->id_pegawai = Auth::user()->id_pegawai;
+                            $data->waktu_masuk = $request->waktu_masuk;
+                            $data->waktu_keluar = $waktu_keluar;
+                            $data->tanggal_absen = date('Y-m-d');
+                            $data->status = $status;
+                            $data->tahun = date('Y');
+                            $data->validation = $validation;
+                            $data->user_type = 0;
 
-                    if ($request->tipe_pegawai == 'tenaga_kesehatan') {
-                        $data->shift = $request->shift;
+                            if ($request->tipe_pegawai == 'tenaga_kesehatan') {
+                                $data->shift = $request->shift;
+                            }
+                            $data->save();
+
+                        }else{
+                            return $this->sendError('Anda telah absen di tanggal '.$check_absen->tanggal_absen, 'Tidak bisa menambah absen!', 422);
+                        }
+                    }else {
+                      if ($check_absen) {
+                        if (is_null($check_absen->waktu_masuk_istirahat)) {
+                            $data = Absen::where('id_pegawai',Auth::user()->id_pegawai)->where('tanggal_absen',date('Y-m-d'))->first();
+                            $data->waktu_masuk_istirahat = $request->waktu_masuk_istirahat;
+                            $data->save();
+                        }else {
+                            return $this->sendError('Anda telah absen masuk istirahat di jam '.$check_absen->waktu_masuk_istirahat, 'Tidak bisa menambah absen!', 422);
+                        }
+                      }  
+                        
                     }
 
-                    $data->save();
-                }else{
-                    return $this->sendError('Anda telah absen di tanggal '.$check_absen->tanggal_absen, 'Tidak bisa menambah absen!', 422);
-                }
+                    
+                
             }elseif($request->jenis === 'pulang'){
                 $data = array();
                 
                 if ($request->tipe_pegawai == 'pegawai_administratif') {
-                    $data = Absen::where('id_pegawai',Auth::user()->id_pegawai)->where('tanggal_absen',date('Y-m-d'))->first();
+                        $data = Absen::where('id_pegawai',Auth::user()->id_pegawai)->where('tanggal_absen',date('Y-m-d'))->first();
                 }else {
                     if ($request->shift !== 'malam') {
                         $data = Absen::where('id_pegawai',Auth::user()->id_pegawai)->where('tanggal_absen',date('Y-m-d'))->first();
@@ -177,8 +191,22 @@ class AbsenController extends BaseController
                 }
                 
                 if ($data->waktu_keluar == null) {
-                    $data->waktu_keluar = $request->waktu_keluar;
-                    $data->save();
+                    if ($status == 'waktu_istirahat') {
+                        if ($check_absen) {
+                            if (is_null($check_absen->waktu_istirahat)) {
+                                $data->waktu_istirahat = $request->waktu_istirahat;
+                                $data->save();
+                            }else {
+                                return $this->sendError('Anda telah absen istirahat di jam '.$check_absen->waktu_istirahat, 'Tidak bisa menambah absen!', 422);
+                            }
+                        }
+                        
+                    }else {
+                        $data->waktu_keluar = $request->waktu_keluar;
+                        $data->save();
+                    }
+                    
+                    
                 }else{
                    return $this->sendError('Anda sudah absen pulang!', 422); 
                 }   
