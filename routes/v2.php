@@ -20,7 +20,7 @@ use App\Http\Controllers\SinkronisasiController;
     
     Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::middleware('my-throttle')->group(function () {
-        Route::get('/current-user', [LoginController::class, 'current_user']);
+        Route::get('/current-user', [LoginController::class, 'current_user2']);
         Route::get('/waktu-server', [HomeController::class, 'waktu_server']);
         Route::prefix('absen')->group(function () {
             Route::get('/check-absen', [AbsenController::class, 'checkAbsen']);
