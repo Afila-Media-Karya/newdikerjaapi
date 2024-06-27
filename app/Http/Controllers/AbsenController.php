@@ -118,6 +118,82 @@ class AbsenController extends BaseController
         try {
             $validation = 0;
             $status = strtolower($request->status);
+            if ($request->jenis === 'datang') {
+
+                $check_absen = $this->checkAbsenByTanggal();
+                
+                if (is_null($check_absen)) {
+                    $data = new Absen;
+                    $waktu_keluar = null;
+                    if ($status == 'hadir' || $status == 'apel') {
+                        $validation = 1;
+                    }elseif ($status == 'dinas luar' || $status == 'izin' || $status == 'sakit') {
+                        $validation = 0;
+                    }                
+                    
+                    if ($status == 'cuti' || $status == 'dinas luar' || $status == 'sakit' || $status == 'izin') {
+                        $waktu_keluar = '16:00:00';
+                        
+                        if ($request->tipe_pegawai == 'tenaga_kesehatan') {
+                            if ($request->shift == 'pagi') {
+                                $waktu_keluar = '14:00:00';
+                            }elseif ($request->shift == 'siang') {
+                                $waktu_keluar = '21:00:00';
+                            }else {
+                               $waktu_keluar = '08:00:00';
+                            }
+                        }
+                    }
+
+                    $data->id_pegawai = Auth::user()->id_pegawai;
+                    $data->waktu_masuk = $request->waktu_masuk;
+                    $data->waktu_keluar = $waktu_keluar;
+                    $data->tanggal_absen = date('Y-m-d');
+                    $data->status = $status;
+                    $data->tahun = date('Y');
+                    $data->validation = $validation;
+                    $data->user_type = 0;
+
+                    if ($request->tipe_pegawai == 'tenaga_kesehatan') {
+                        $data->shift = $request->shift;
+                    }
+
+                    $data->save();
+                }else{
+                    return $this->sendError('Anda telah absen di tanggal '.$check_absen->tanggal_absen, 'Tidak bisa menambah absen!', 422);
+                }
+            }elseif($request->jenis === 'pulang'){
+                $data = array();
+                
+                if ($request->tipe_pegawai == 'pegawai_administratif') {
+                    $data = Absen::where('id_pegawai',Auth::user()->id_pegawai)->where('tanggal_absen',date('Y-m-d'))->first();
+                }else {
+                    if ($request->shift !== 'malam') {
+                        $data = Absen::where('id_pegawai',Auth::user()->id_pegawai)->where('tanggal_absen',date('Y-m-d'))->first();
+                    }else{
+                        $tanggalSebelumnya = date('Y-m-d', strtotime(date('Y-m-d') . ' -1 day'));
+                        $data = Absen::where('id_pegawai',Auth::user()->id_pegawai)->where('tanggal_absen',$tanggalSebelumnya)->first();
+                    }
+                }
+                
+                if ($data->waktu_keluar == null) {
+                    $data->waktu_keluar = $request->waktu_keluar;
+                    $data->save();
+                }else{
+                   return $this->sendError('Anda sudah absen pulang!', 422); 
+                }   
+            }            
+        } catch (\Exception $e) {
+            return $this->sendError($e->getMessage(), $e->getMessage(), 200);
+        }
+        return $this->sendResponse($data, 'Absen Added Success');
+    }
+
+    public function new_presensi(PresensiRequest $request){
+        $data = array();
+        try {
+            $validation = 0;
+            $status = strtolower($request->status);
             $check_absen = $this->checkAbsenByTanggal();
             if ($request->jenis === 'datang') {
                     $data = new Absen;
@@ -205,8 +281,7 @@ class AbsenController extends BaseController
                         $data->waktu_keluar = $request->waktu_keluar;
                         $data->save();
                     }
-                    
-                    
+                
                 }else{
                    return $this->sendError('Anda sudah absen pulang!', 422); 
                 }   

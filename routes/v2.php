@@ -14,6 +14,10 @@ use App\Http\Controllers\SinkronisasiController;
 
     Route::post('/sign-in', [LoginController::class, 'signIn']);
     Route::post('/row-insert-user', [SinkronisasiController::class, 'insert_user']);
+    Route::post('/push-master-aktivitas', [SinkronisasiController::class, 'push_master_aktivitas']);
+    Route::post('/push-tpp-jabatan', [SinkronisasiController::class, 'push_nilai_tpp_ke_jabatan']);
+
+    
     Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::middleware('my-throttle')->group(function () {
         Route::get('/current-user', [LoginController::class, 'current_user']);
@@ -22,7 +26,7 @@ use App\Http\Controllers\SinkronisasiController;
             Route::get('/check-absen', [AbsenController::class, 'checkAbsen']);
             Route::get('/check-absen-nakes', [AbsenController::class, 'checkAbsenNakes']);
             Route::get('/hapus-absen', [AbsenController::class, 'hapusAbsen']);
-            Route::post('/presensi', [AbsenController::class, 'presensi']);
+            Route::post('/presensi', [AbsenController::class, 'new_presensi']);
         });
 
         Route::prefix('profile')->group(function () {
