@@ -218,7 +218,7 @@ class AbsenController extends BaseController
                         }
                     }
 
-                    if ($status !== 'masuk_istirahat') {
+                    if ($status !== 'waktu_masuk_istirahat') {
                         if (is_null($check_absen)) {
                             $data->id_pegawai = Auth::user()->id_pegawai;
                             $data->waktu_masuk = $request->waktu_masuk;
