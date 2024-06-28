@@ -266,7 +266,7 @@ class AbsenController extends BaseController
                     }
                 }
                 
-                if ($data->waktu_keluar == null) {
+                // if ($data->waktu_keluar == null) {
                     if ($status == 'waktu_istirahat') {
                         if ($check_absen) {
                             if (is_null($check_absen->waktu_istirahat)) {
@@ -282,9 +282,9 @@ class AbsenController extends BaseController
                         $data->save();
                     }
                 
-                }else{
-                   return $this->sendError('Anda sudah absen pulang!', 422); 
-                }   
+                // }else{
+                //    return $this->sendError('Anda sudah absen pulang!', 422); 
+                // }   
             }            
         } catch (\Exception $e) {
             return $this->sendError($e->getMessage(), $e->getMessage(), 200);
