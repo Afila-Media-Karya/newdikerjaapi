@@ -115,7 +115,7 @@ class LoginController extends BaseController
             }
 
             $data->waktu_istirahat = '12:00:00';
-            $data->waktu_masuk_istirahat = '12:00:00';
+            $data->waktu_masuk_istirahat = '13:00:00';
 
             if ($this->isRhamadan($tanggal_hari_ini)) {
                 if ($data->tipe_pegawai == 'pegawai_administratif') {
