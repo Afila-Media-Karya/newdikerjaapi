@@ -242,6 +242,7 @@ class AbsenController extends BaseController
                         if (is_null($check_absen->waktu_masuk_istirahat)) {
                             $data = Absen::where('id_pegawai',Auth::user()->id_pegawai)->where('tanggal_absen',date('Y-m-d'))->first();
                             $data->waktu_masuk_istirahat = $request->waktu_masuk_istirahat;
+                            $data->status = strtolower($request->status_masuk_istirahat);
                             $data->save();
                         }else {
                             return $this->sendError('Anda telah absen masuk istirahat di jam '.$check_absen->waktu_masuk_istirahat, 'Tidak bisa menambah absen!', 422);
