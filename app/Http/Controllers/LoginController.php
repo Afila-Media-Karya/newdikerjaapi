@@ -23,11 +23,11 @@ class LoginController extends BaseController
             return $this->sendError('Username atau password salah', 'Unauthorized',401);
         }
 
-        if ($path[1] !== 'v1' && $path[1] !== 'v2') {
-            return $this->sendError('Silahkan Update Aplikasi DANGKE', 'Unauthorized',401);
+        if ($path[1] !== 'v1' && $path[1] !== 'v2' && $path[1] !== 'v3') {
+            return $this->sendError('Silahkan Update Aplikasi DIKERJA', 'Unauthorized',401);
         }
 
-        if ($request->version !== '3.4.1' && $request->version !== '3.4.2' && $request->version !== '3.4.3' && $request->version !== '3.5.3' && $request->version !== '3.5.4') {
+        if ($request->version !== '3.4.1' && $request->version !== '3.4.2' && $request->version !== '3.4.3' && $request->version !== '3.5.3' && $request->version !== '3.5.4' && $request->version !== '3.5.5') {
             return $this->sendError('Mohon Update Aplikasi versi terbaru', 'Unauthorized',401);
         }
         
