@@ -365,7 +365,7 @@ class HomeController extends BaseController
             tb_jabatan.pembayaran,
             tb_unit_kerja.waktu_masuk,
             tb_unit_kerja.waktu_keluar,
-            (SELECT SUM(waktu) FROM tb_aktivitas WHERE tb_aktivitas.id_pegawai = tb_pegawai.id AND MONTH(tanggal) = ? LIMIT 1) as capaian_waktu', [$bulan])
+            (SELECT SUM(waktu) FROM tb_aktivitas WHERE tb_aktivitas.id_pegawai = tb_pegawai.id AND validation = 1 AND MONTH(tanggal) = ? LIMIT 1) as capaian_waktu', [$bulan])
         ->join('tb_jabatan', 'tb_jabatan.id_pegawai', 'tb_pegawai.id')
         ->join('tb_master_jabatan', 'tb_jabatan.id_master_jabatan', '=', 'tb_master_jabatan.id')
         ->join('tb_satuan_kerja', 'tb_pegawai.id_satuan_kerja', '=', 'tb_satuan_kerja.id')

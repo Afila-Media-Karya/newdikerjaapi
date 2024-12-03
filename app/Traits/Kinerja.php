@@ -18,6 +18,7 @@ trait Kinerja
                 DB::raw('COUNT(*) as total_aktivitas')
             )
             ->where('id_pegawai', Auth::user()->id_pegawai)
+            ->where('validation',1)
             ->whereMonth('tanggal',$bulan)
             ->first();
 
