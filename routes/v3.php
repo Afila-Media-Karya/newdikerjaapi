@@ -11,7 +11,6 @@ use App\Http\Controllers\LayananController;
 use App\Http\Controllers\DokumenPribadiController;
 use App\Http\Controllers\SinkronisasiController;
 
-
     Route::post('/sign-in', [LoginController::class, 'signIn']);
     Route::post('/row-insert-user', [SinkronisasiController::class, 'insert_user']);
     Route::post('/push-master-aktivitas', [SinkronisasiController::class, 'push_master_aktivitas']);
