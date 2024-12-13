@@ -126,7 +126,7 @@ class LoginController extends BaseController
                     $data->waktu_masuk = '08:00:00';
                     $data->waktu_keluar = '13:00:00';
                     $data->waktu_apel = '08:00:00';
-                }elseif ($data->tipe_pegawai == 'tenaga_pendidik' || $data->tipe_pegawai == 'tenaga_pendidik_non_guru') {
+                }elseif ($data->tipe_pegawai == 'tenaga_pendidik' && $data->tipe_pegawai == 'tenaga_pendidik_non_guru') {
                     $data->waktu_masuk = '08:00:00';
                     $data->waktu_keluar = '14:00:00';
                     $data->waktu_apel = '07:30:00';
