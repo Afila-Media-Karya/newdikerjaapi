@@ -27,7 +27,7 @@ class LoginController extends BaseController
             return $this->sendError('Silahkan Update Aplikasi DIKERJA', 'Unauthorized',401);
         }
 
-        if ($request->version !== '3.5.5' && $request->version !== '3.5.6' && $request->version !== '3.5.7') {
+        if ($request->version !== '3.5.5' && $request->version !== '3.5.6' && $request->version !== '3.5.7' && $request->version !== '3.5.8') {
             return $this->sendError('Mohon Update Aplikasi versi terbaru', 'Unauthorized',401);
         }
         
