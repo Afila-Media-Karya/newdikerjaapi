@@ -350,30 +350,52 @@ class HomeController extends BaseController
         $findJabatan = $this->findJabatan();
 
         $data = DB::table('tb_pegawai')
-        ->selectRaw('
-            tb_pegawai.id,
-            tb_pegawai.nama,
-            tb_pegawai.nip,
-            tb_pegawai.golongan,
-            tb_pegawai.tipe_pegawai,
-            tb_master_jabatan.nama_jabatan,
-            tb_jabatan.target_waktu,
-            tb_master_jabatan.kelas_jabatan,
-            tb_jabatan.pagu_tpp,
-            tb_master_jabatan.jenis_jabatan,
-            tb_master_jabatan.level_jabatan,
-            tb_jabatan.pembayaran,
-            tb_unit_kerja.waktu_masuk,
-            tb_unit_kerja.waktu_keluar,
-            (SELECT SUM(waktu) FROM tb_aktivitas WHERE tb_aktivitas.id_pegawai = tb_pegawai.id AND validation = 1 AND MONTH(tanggal) = ? LIMIT 1) as capaian_waktu', [$bulan])
-        ->join('tb_jabatan', 'tb_jabatan.id_pegawai', 'tb_pegawai.id')
-        ->join('tb_master_jabatan', 'tb_jabatan.id_master_jabatan', '=', 'tb_master_jabatan.id')
-        ->join('tb_satuan_kerja', 'tb_pegawai.id_satuan_kerja', '=', 'tb_satuan_kerja.id')
-        ->join('tb_unit_kerja','tb_jabatan.id_unit_kerja','=','tb_unit_kerja.id')
-        ->where('tb_pegawai.id', $findJabatan->id_pegawai)
-        ->where('tb_jabatan.id_satuan_kerja', $findJabatan->satuan_kerja)
-        ->groupBy('tb_pegawai.id', 'tb_pegawai.nama', 'tb_pegawai.nip', 'tb_pegawai.golongan', 'tb_master_jabatan.nama_jabatan', 'tb_jabatan.target_waktu','tb_master_jabatan.kelas_jabatan','tb_jabatan.pagu_tpp','tb_master_jabatan.jenis_jabatan','tb_master_jabatan.level_jabatan','tb_jabatan.pembayaran','tb_unit_kerja.waktu_masuk','tb_unit_kerja.waktu_keluar')
-        ->first();
+                ->selectRaw('
+                    tb_pegawai.id,
+                    tb_pegawai.nama,
+                    tb_pegawai.nip,
+                    tb_pegawai.golongan,
+                    tb_pegawai.tipe_pegawai,
+                    tb_master_jabatan.nama_jabatan,
+                    tb_jabatan.target_waktu,
+                    tb_master_jabatan.kelas_jabatan,
+                    tb_jabatan.pagu_tpp,
+                    tb_master_jabatan.jenis_jabatan,
+                    tb_master_jabatan.level_jabatan,
+                    tb_jabatan.pembayaran,
+                    tb_unit_kerja.waktu_masuk,
+                    tb_unit_kerja.waktu_keluar,
+                    (SELECT SUM(waktu) 
+                    FROM tb_aktivitas 
+                    WHERE tb_aktivitas.id_pegawai = tb_pegawai.id 
+                    AND validation = 1 
+                    AND tahun = :tahun 
+                    AND MONTH(tanggal) = :bulan) as capaian_waktu',
+                    ['tahun' => $tahun, 'bulan' => $bulan]
+                )
+                ->join('tb_jabatan', 'tb_jabatan.id_pegawai', 'tb_pegawai.id')
+                ->join('tb_master_jabatan', 'tb_jabatan.id_master_jabatan', '=', 'tb_master_jabatan.id')
+                ->join('tb_satuan_kerja', 'tb_pegawai.id_satuan_kerja', '=', 'tb_satuan_kerja.id')
+                ->join('tb_unit_kerja', 'tb_jabatan.id_unit_kerja', '=', 'tb_unit_kerja.id')
+                ->where('tb_pegawai.id', $findJabatan->id_pegawai)
+                ->where('tb_jabatan.id_satuan_kerja', $findJabatan->satuan_kerja)
+                ->groupBy(
+                    'tb_pegawai.id', 
+                    'tb_pegawai.nama', 
+                    'tb_pegawai.nip', 
+                    'tb_pegawai.golongan', 
+                    'tb_master_jabatan.nama_jabatan', 
+                    'tb_jabatan.target_waktu',
+                    'tb_master_jabatan.kelas_jabatan',
+                    'tb_jabatan.pagu_tpp',
+                    'tb_master_jabatan.jenis_jabatan',
+                    'tb_master_jabatan.level_jabatan',
+                    'tb_jabatan.pembayaran',
+                    'tb_unit_kerja.waktu_masuk',
+                    'tb_unit_kerja.waktu_keluar'
+                )
+                ->first();
+
 
         $child = $this->data_kehadiran_pegawai($data->id,$tanggal_awal,$tanggal_akhir,$data->waktu_masuk,$data->waktu_keluar,$data->tipe_pegawai);
         $data->jml_potongan_kehadiran_kerja = $child['jml_potongan_kehadiran_kerja'];

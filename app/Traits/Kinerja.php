@@ -20,6 +20,7 @@ trait Kinerja
             ->where('id_pegawai', Auth::user()->id_pegawai)
             ->where('validation',1)
             ->whereMonth('tanggal',$bulan)
+            ->whereYear('tahun',date('Y'))
             ->first();
 
             // return $aktivitas;
