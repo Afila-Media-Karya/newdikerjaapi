@@ -140,7 +140,7 @@ class ProfileController extends BaseController
      
         $data = array();
         try {
-            $data = DB::table("tb_skp")->select('tb_skp.id','tb_skp.rencana as value')->join('tb_jabatan','tb_skp.id_jabatan','=','tb_jabatan.id')->where('tb_jabatan.id_pegawai',Auth::user()->id_pegawai)->get();
+            $data = DB::table("tb_skp")->select('tb_skp.id','tb_skp.rencana as value')->join('tb_jabatan','tb_skp.id_jabatan','=','tb_jabatan.id')->where('tb_jabatan.id_pegawai',Auth::user()->id_pegawai)->where('tahun',date('Y'))->get();
         } catch (\Exception $e) {
            return $this->sendError($e->getMessage(), $e->getMessage(), 200);
         }
