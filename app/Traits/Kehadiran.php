@@ -247,8 +247,8 @@ trait Kehadiran
     public function isRhamadan($tanggal)
     {
         // Ubah tanggal ke format yang sesuai untuk memeriksa bulan
-        $tanggal_awal_ramadan = '2024-03-12'; // Tanggal awal bulan Ramadan
-        $tanggal_akhir_ramadan = '2024-04-09'; // Tanggal akhir bulan Ramadan
+        $tanggal_awal_ramadan = '2025-02-03'; // Tanggal awal bulan Ramadan
+        $tanggal_akhir_ramadan = '2025-31-03'; // Tanggal akhir bulan Ramadan
 
         // Periksa apakah tanggal berada dalam rentang bulan Ramadan
         if ($tanggal >= $tanggal_awal_ramadan && $tanggal <= $tanggal_akhir_ramadan) {
