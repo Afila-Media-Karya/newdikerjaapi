@@ -291,6 +291,29 @@ trait Kehadiran
                 if ($key !== false) {
                     $tipe_pegawai == 'pegawai_administratif' ? $waktu_checkout = '15:00:00' : $waktu_checkout = '13:00:00';
                 }
+                
+                if ($tipe_pegawai == 'tenaga_pendidik') {
+                        $waktu_checkout = '14:00:00';
+                        
+                        if (Carbon::parse($tanggal)->dayOfWeek === Carbon::FRIDAY) {
+                            $waktu_checkout = '11:30:00';
+                        }
+
+                        if ($this->isRhamadan($tanggal)) {
+                            $waktu_checkout = '13:30:00';
+                        }
+                }
+
+                if ($tipe_pegawai == 'tenaga_pendidik_non_guru') {
+                    $waktu_checkout = '16:00:00';
+                    if (Carbon::parse($tanggal)->dayOfWeek === Carbon::FRIDAY) {
+                        $waktu_checkout = '15:30:00';
+                    }
+
+                    if ($this->isRhamadan($tanggal)) {
+                            $waktu_checkout = '15:00:00';
+                        }
+                }
 
                 $waktu_tetap_absen = strtotime($waktu_checkout);
                 $waktu_absen = strtotime($waktu);
