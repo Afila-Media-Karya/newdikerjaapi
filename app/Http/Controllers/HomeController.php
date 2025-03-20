@@ -93,8 +93,15 @@ class HomeController extends BaseController
         return $this->sendResponse($data, 'Atasan fetch Success');
     }
 
-    function isTanggalLibur($tanggal)
+    function isTanggalLibur($tanggal,$tipe_pegawai)
     {
+
+        if ($tipe_pegawai == 'pegawai_administratif' || $tipe_pegawai == 'tenaga_kesehatan') {
+            $tipe_pegawai = 'pegawai_administratif';
+        }else {
+            $tipe_pegawai = 'tenaga_pendidik';
+        }
+
         $libur = DB::table('tb_libur')
             ->where('tanggal_mulai', '<=', $tanggal)
             ->where('tanggal_selesai', '>=', $tanggal)
@@ -129,7 +136,7 @@ class HomeController extends BaseController
         while ($current_date->lte(Carbon::parse($tanggal_akhir))) {
             if ($tipe_pegawai == 'pegawai_administratif') {
                 if ($current_date->dayOfWeek !== 6 && $current_date->dayOfWeek !== 0) {
-                    if (!$this->isTanggalLibur($current_date->toDateString())) {
+                    if (!$this->isTanggalLibur($current_date->toDateString(),$tipe_pegawai)) {
                         $daftar_tanggal[] = $current_date->toDateString();
                     }
                 }
@@ -171,7 +178,7 @@ class HomeController extends BaseController
                                 if ($tipe_pegawai == 'pegawai_administratif' && !$this->isRhamadan($tanggalCarbon->toDateString())) {
                                     $jml_tidak_apel += 1;
                                 }elseif ($tipe_pegawai == 'tenaga_kesehatan') {
-                                    if ($absen_per_tanggal[$tanggal]['shift'] == 'pagi' && !$this->isTanggalLibur($tanggalCarbon->toDateString()) && !$this->isRhamadan($tanggalCarbon->toDateString())) {
+                                    if ($absen_per_tanggal[$tanggal]['shift'] == 'pagi' && !$this->isTanggalLibur($tanggalCarbon->toDateString(),$tipe_pegawai) && !$this->isRhamadan($tanggalCarbon->toDateString())) {
                                         $jml_tidak_apel += 1;
                                     }
                                 }
