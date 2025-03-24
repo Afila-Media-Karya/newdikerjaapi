@@ -58,6 +58,7 @@ class AktivitasController extends BaseController
               if (DB::table('tb_libur')
                 ->whereDate('tanggal_mulai', '<=', $request->tanggal)
                 ->whereDate('tanggal_selesai', '>=', $request->tanggal)
+                ->where('tipe','pegawai_administratif')
                 ->exists()) {
                     return $this->sendError('Aktivitas tidak dapat ditambahkan pada hari libur', 'Aktivitas tidak dapat ditambahkan pada hari libur', 422);
                 }
