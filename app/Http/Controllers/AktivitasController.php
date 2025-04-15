@@ -89,9 +89,9 @@ class AktivitasController extends BaseController
                 }
             }
 
-            if ($this->checkValidasiLimaHari($request->tanggal)) {
-                return $this->sendError('Tanggal aktivitas sudah lewat 5 hari', 'Tanggal aktivitas sudah lewat 5 hari', 422);
-            }
+            // if ($this->checkValidasiLimaHari($request->tanggal)) {
+            //     return $this->sendError('Tanggal aktivitas sudah lewat 5 hari', 'Tanggal aktivitas sudah lewat 5 hari', 422);
+            // }
 
             $checkAktivitasDuplicate = Aktivitas::where('aktivitas',$request->aktivitas)->where('keterangan',$request->keterangan)->whereDate('tanggal',$request->tanggal)->where('id_pegawai',Auth::user()->id_pegawai)->first();
 
