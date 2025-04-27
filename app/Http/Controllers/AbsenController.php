@@ -12,6 +12,7 @@ use Carbon\Carbon;
 
 class AbsenController extends BaseController
 {
+    
     public function checkAbsen(){
         $data = array();
         try {
@@ -111,6 +112,19 @@ class AbsenController extends BaseController
             $data = DB::table('tb_absen')->join('tb_pegawai','tb_absen.id_pegawai','=','tb_pegawai.id')->select('tb_absen.status','tb_pegawai.nip','tb_absen.tanggal_absen','waktu_masuk_istirahat','waktu_istirahat')->where('tb_absen.id_pegawai',Auth::user()->id_pegawai)->where('tanggal_absen',$date)->first();
         }
         return $data;
+    }   
+
+    public function jml_shiftNakes(){
+        $result = DB::table('tb_pegawai')
+            ->select('tb_unit_kerja.jumlah_shift')
+            ->join('tb_jabatan','tb_jabatan.id_pegawai','tb_pegawai.id')
+            ->join("tb_master_jabatan",'tb_jabatan.id_master_jabatan','=','tb_master_jabatan.id')
+            ->join('tb_satuan_kerja','tb_jabatan.id_satuan_kerja','=','tb_satuan_kerja.id')
+            ->join('tb_unit_kerja','tb_jabatan.id_unit_kerja','=','tb_unit_kerja.id')
+            ->where('tb_pegawai.id',Auth::user()->id_pegawai)->first();
+
+        $result = $result ? $result->jumlah_shift : 3;
+        return $result;
     }
 
     public function presensi(PresensiRequest $request){
@@ -135,12 +149,13 @@ class AbsenController extends BaseController
                         $waktu_keluar = '16:00:00';
                         
                         if ($request->tipe_pegawai == 'tenaga_kesehatan') {
+                            $jumlah_shift = $this->jml_shiftNakes();
                             if ($request->shift == 'pagi') {
-                                $waktu_keluar = '14:00:00';
+                                $waktu_keluar = $jumlah_shift == 3 ? '14:00:00' : '17:00:00';
                             }elseif ($request->shift == 'siang') {
                                 $waktu_keluar = '21:00:00';
                             }else {
-                               $waktu_keluar = '08:00:00';
+                               $waktu_keluar = $jumlah_shift == 3 ? '08:00:00' : '07:30:00';
                             }
                         }
                     }
