@@ -186,7 +186,7 @@ trait Kehadiran
         return $data;
     }
 
-    public function konvertWaktuNakes($params, $waktu, $tanggal,$shift,$waktu_tetap)
+    public function konvertWaktuNakes($params, $waktu, $tanggal,$shift,$waktu_tetap,$tipe_pegawai)
     {
         $diff = '';
         $selisih_waktu = '';
@@ -195,15 +195,22 @@ trait Kehadiran
         $waktu_absen_datang = '';
         $waktu_absen_pulang = '';
 
-        if ($shift == 'pagi') {
+        if ($tipe_pegawai == 'tenaga_kesehatan') {
+            if ($shift == 'pagi') {
+                $waktu_absen_datang = '08:00:00';
+                $waktu_absen_pulang = '14:00:00';
+            }elseif ($shift == 'siang') {
+                $waktu_absen_datang = '14:00:00';
+                $waktu_absen_pulang = '21:00:00';
+            }else {
+                $waktu_absen_datang = '21:00:00';
+                $waktu_absen_pulang = '08:00:00';
+            }
+        }
+
+        if ($tipe_pegawai == 'tenaga_kesehatan_non_shift') {
             $waktu_absen_datang = '08:00:00';
-            $waktu_absen_pulang = '14:00:00';
-        }elseif ($shift == 'siang') {
-            $waktu_absen_datang = '14:00:00';
-            $waktu_absen_pulang = '21:00:00';
-        }else {
-            $waktu_absen_datang = '21:00:00';
-            $waktu_absen_pulang = '08:00:00';
+            $waktu_absen_pulang = '15:15:00';
         }
 
         $tanggalCarbon = Carbon::createFromFormat('Y-m-d', $tanggal);

@@ -158,6 +158,10 @@ class AbsenController extends BaseController
                                $waktu_keluar = $jumlah_shift == 3 ? '08:00:00' : '07:30:00';
                             }
                         }
+
+                        if ($request->tipe_pegawai == 'tenaga_kesehatan_non_shift') {
+                            $waktu_keluar = '15:15:00';
+                        }
                     }
 
                     $data->id_pegawai = Auth::user()->id_pegawai;
@@ -180,7 +184,7 @@ class AbsenController extends BaseController
             }elseif($request->jenis === 'pulang'){
                 $data = array();
                 
-                if ($request->tipe_pegawai == 'pegawai_administratif') {
+                if ($request->tipe_pegawai == 'pegawai_administratif' || $request->tipe_pegawai == 'tenaga_kesehatan_non_shift') {
                     $data = Absen::where('id_pegawai',Auth::user()->id_pegawai)->where('tanggal_absen',date('Y-m-d'))->first();
                 }else {
                     if ($request->shift !== 'malam') {

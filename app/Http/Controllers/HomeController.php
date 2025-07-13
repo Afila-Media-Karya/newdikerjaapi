@@ -132,6 +132,8 @@ class HomeController extends BaseController
         $count_dinas_luar = 0;
         $count_apel = 0;
         $jml_tidak_apel = 0;
+        $jml_tidak_apel_hari_senin = 0;
+        $jml_tidak_hadir_berturut_turut = 0;
         
         while ($current_date->lte(Carbon::parse($tanggal_akhir))) {
             if ($tipe_pegawai == 'pegawai_administratif') {
@@ -168,6 +170,8 @@ class HomeController extends BaseController
         // Buat hasil akhir dengan semua tanggal dalam rentang
         $hasil_akhir = [];
         $hari_tidak_hadir_nakes = [];
+        $jml_menit_terlambat_masuk_kerja = 0;
+        $jml_menit_terlambat_pulang_kerja = 0;
         foreach ($daftar_tanggal as $tanggal) {
             if (isset($absen_per_tanggal[$tanggal])) {
                 $tanggalCarbon = Carbon::createFromFormat('Y-m-d', $tanggal);
@@ -209,6 +213,14 @@ class HomeController extends BaseController
                 }else{
                     $selisih_waktu_masuk = $this->konvertWaktuNakes('masuk',$absen_per_tanggal[$tanggal]['waktu_masuk'],$tanggal,$absen_per_tanggal[$tanggal]['shift'],$waktu_tetap_masuk);
                     $selisih_waktu_pulang = $this->konvertWaktuNakes('keluar',$absen_per_tanggal[$tanggal]['waktu_keluar'],$tanggal,$absen_per_tanggal[$tanggal]['shift'],$waktu_tetap_keluar);
+                }
+
+                if ($absen_per_tanggal[$tanggal]['waktu_masuk'] !== null) {
+                    $jml_menit_terlambat_masuk_kerja += $selisih_waktu_masuk;
+                }
+
+                if ($tanggal !== date('Y-m-d')) {
+                    $jml_menit_terlambat_pulang_kerja += $selisih_waktu_pulang;
                 }
             
                 if ($absen_per_tanggal[$tanggal]['status'] !== 'cuti' && $absen_per_tanggal[$tanggal]['status'] !== 'dinas luar' && $absen_per_tanggal[$tanggal]['status'] !== 'sakit') {
@@ -327,7 +339,7 @@ class HomeController extends BaseController
             'jml_potongan_kehadiran_kerja' => $jml_potongan_kehadiran_kerja,
             'jml_hadir' => $count_hadir,
             'jml_sakit' => $count_sakit,
-            'jml_cuti' => $count_cuti,
+            'jml_cuti' => $count_izin_cuti,
             'jml_dinas_luar' => $count_dinas_luar,
             'jml_izin_cuti' => $count_izin_cuti,
             'kmk_30' => $kmk_30,
@@ -340,6 +352,8 @@ class HomeController extends BaseController
             'cpk_90_keatas' => $cpk_90_keatas,
             'jml_tidak_apel' => $jml_tidak_apel,
             'jml_apel' => $count_apel,
+            'jml_menit_terlambat_masuk_kerja' => $jml_menit_terlambat_masuk_kerja,
+            'jml_menit_terlambat_pulang_kerja' => $jml_menit_terlambat_pulang_kerja
         ];
     }
 
@@ -415,6 +429,8 @@ class HomeController extends BaseController
         $data->jml_apel = $child['jml_apel'];
         $data->jml_dinas_luar = $child['jml_dinas_luar'];
         $data->jml_tidak_apel = $child['jml_tidak_apel'];
+        $data->jml_menit_terlambat_masuk_kerja = $child['jml_menit_terlambat_masuk_kerja'];
+        $data->jml_menit_terlambat_pulang_kerja = $child['jml_menit_terlambat_pulang_kerja'];
 
         $jmlPaguTpp = 0;
         $jmlNilaiKinerja = 0;
