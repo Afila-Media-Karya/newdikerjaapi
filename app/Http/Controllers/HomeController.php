@@ -211,8 +211,8 @@ class HomeController extends BaseController
                     $selisih_waktu_masuk = $this->konvertWaktu('masuk', $absen_per_tanggal[$tanggal]['waktu_masuk'],$tanggal,$waktu_tetap_masuk,$tipe_pegawai);
                     $selisih_waktu_pulang = $this->konvertWaktu('keluar', $absen_per_tanggal[$tanggal]['waktu_keluar'],$tanggal,$waktu_tetap_keluar,$tipe_pegawai);
                 }else{
-                    $selisih_waktu_masuk = $this->konvertWaktuNakes('masuk',$absen_per_tanggal[$tanggal]['waktu_masuk'],$tanggal,$absen_per_tanggal[$tanggal]['shift'],$waktu_tetap_masuk);
-                    $selisih_waktu_pulang = $this->konvertWaktuNakes('keluar',$absen_per_tanggal[$tanggal]['waktu_keluar'],$tanggal,$absen_per_tanggal[$tanggal]['shift'],$waktu_tetap_keluar);
+                    $selisih_waktu_masuk = $this->konvertWaktuNakes('masuk',$absen_per_tanggal[$tanggal]['waktu_masuk'],$tanggal,$absen_per_tanggal[$tanggal]['shift'],$waktu_tetap_masuk,$tipe_pegawai);
+                    $selisih_waktu_pulang = $this->konvertWaktuNakes('keluar',$absen_per_tanggal[$tanggal]['waktu_keluar'],$tanggal,$absen_per_tanggal[$tanggal]['shift'],$waktu_tetap_keluar,$tipe_pegawai);
                 }
 
                 if ($absen_per_tanggal[$tanggal]['waktu_masuk'] !== null) {
