@@ -10,6 +10,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LayananController;
 use App\Http\Controllers\DokumenPribadiController;
 use App\Http\Controllers\SinkronisasiController;
+use App\Http\Controllers\GpsController;
 
 
     Route::post('/sign-in', [LoginController::class, 'signIn']);
@@ -22,6 +23,7 @@ use App\Http\Controllers\SinkronisasiController;
         Route::middleware('my-throttle')->group(function () {
         Route::get('/current-user', [LoginController::class, 'current_user2']);
         Route::get('/waktu-server', [HomeController::class, 'waktu_server']);
+        Route::post('/check-gps', [GpsController::class, 'checkGps']);
         Route::prefix('absen')->group(function () {
             Route::get('/check-absen', [AbsenController::class, 'checkAbsen']);
             Route::get('/check-absen-nakes', [AbsenController::class, 'checkAbsenNakes']);
