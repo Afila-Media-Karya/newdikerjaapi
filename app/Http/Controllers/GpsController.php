@@ -40,6 +40,22 @@ class GpsController extends BaseController
         return false; // Tidak ada indikasi GPS palsu
     }
 
+    public function updateAbsen($indikasi_fake_gps){
+        $data = DB::table('tb_absen')
+                ->where('id_pegawai', Auth::user()->id_pegawai)
+                ->where('tanggal_absen', date('Y-m-d'))
+                ->first();
+         
+        if ($data) {
+            DB::table('tb_absen')
+                ->where('id_pegawai', Auth::user()->id_pegawai)
+                ->where('tanggal_absen', date('Y-m-d'))
+                ->update(['indikasi_fake_gps' => $indikasi_fake_gps]);
+        }
+        return $data;
+
+    }
+
     public function checkGps(Request $request)
     {
         // Pastikan Anda mendapatkan data longitude dan latitude dari request
@@ -72,9 +88,10 @@ class GpsController extends BaseController
         $isFake = $this->detectFakeGps($longitudes, $latitudes, $patokanLongitude, $patokanLatitude, $threshold);
 
         if ($isFake) {
+            $this->updateAbsen(1);
             return $this->sendResponse([], 'Indikasi GPS palsu terdeteksi.');
         }
-        
+        $this->updateAbsen(0);
         return $this->sendResponse([], 'Tidak ada indikasi GPS palsu.');
     }
 }
