@@ -50,7 +50,7 @@ class GpsController extends BaseController
             DB::table('tb_absen')
                 ->where('id_pegawai', Auth::user()->id_pegawai)
                 ->where('tanggal_absen', date('Y-m-d'))
-                ->update(['indikasi_fake_gps' => $indikasi_fake_gps]);
+                ->update(['indikasi_fake' => $indikasi_fake_gps]);
         }
         return $data;
 
