@@ -15,7 +15,7 @@ class GpsController extends BaseController
         array $latitudesArray, 
         float $patokanLongitude, 
         float $patokanLatitude, 
-        float $threshold = 0.0001
+        float $threshold = 0.07
     ) {
         // Pastikan kedua array memiliki jumlah elemen yang sama
         if (count($longitudesArray) !== count($latitudesArray)) {
