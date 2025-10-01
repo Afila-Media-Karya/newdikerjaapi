@@ -152,6 +152,7 @@ class HomeController extends BaseController
         $data = DB::table('tb_absen')
             ->select('tanggal_absen', 'status', 'waktu_masuk', 'waktu_keluar','shift')
             ->where('id_pegawai', $pegawai)
+            ->where('validation', 1)
             ->whereBetween('tanggal_absen', [$tanggal_awal, $tanggal_akhir])
             ->get();
 
@@ -274,7 +275,6 @@ class HomeController extends BaseController
                         $tanggalSebelumnya = date('Y-m-d', strtotime($tanggal . ' -1 day'));
                         $check_last_day = DB::table('tb_absen')->where('tanggal_absen',$tanggalSebelumnya)->where('id_pegawai',$pegawai)->first();
                         if (is_null($check_last_day) || $check_last_day->shift !== 'malam') {
-                            // $jml_alfa += 1;
                             $status_ = '-';
                         }else{
                             $status_ = 'Lepas Jaga / Lepas Piket';
