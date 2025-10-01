@@ -61,7 +61,7 @@ class GpsController extends BaseController
         // Pastikan Anda mendapatkan data longitude dan latitude dari request
         $longitudes = $request->input('longitudes');
         $latitudes = $request->input('latitudes');
-        $threshold = 0.0001;
+        $threshold = 0.07;
         // dd($longitudes, $latitudes); // Hapus dd() setelah pengujian
 
         $data = User::where('users.id', Auth::user()->id)
