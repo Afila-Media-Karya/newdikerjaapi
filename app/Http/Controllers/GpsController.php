@@ -15,29 +15,33 @@ class GpsController extends BaseController
         array $latitudesArray, 
         float $patokanLongitude, 
         float $patokanLatitude, 
-        float $threshold = 0.07
+        float $threshold = 0.07 // Pastikan default yang masuk akal
     ) {
-        // Pastikan kedua array memiliki jumlah elemen yang sama
+        // Pastikan kedua array memiliki jumlah elemen yang sama (Logika bagus, biarkan)
         if (count($longitudesArray) !== count($latitudesArray)) {
-            return true; // Anggap palsu jika data tidak konsisten
+            return true; 
         }
         
         // Iterasi setiap pasang koordinat
         for ($i = 0; $i < count($longitudesArray); $i++) {
-            $longitude = $longitudesArray[$i];
-            $latitude = $latitudesArray[$i];
+            $longitude = (float) $longitudesArray[$i]; // Pastikan konversi ke float
+            $latitude = (float) $latitudesArray[$i];   // Pastikan konversi ke float
 
             // Hitung selisih absolut untuk longitude dan latitude
             $diffLongitude = abs($longitude - $patokanLongitude);
             $diffLatitude = abs($latitude - $patokanLatitude);
 
-            // Jika salah satu selisih melebihi ambang batas, terindikasi palsu
+            // Jika salah satu selisih melebihi ambang batas, terindikasi palsu (atau di luar area kerja)
             if ($diffLongitude > $threshold || $diffLatitude > $threshold) {
-                return true; // Indikasi GPS palsu
+                // Jika Anda ingin menganggap data GPS dari client adalah 'palsu' jika
+                // ada pergerakan di luar radius 7.7 km (threshold 0.07) dari patokan.
+                return true; // Dinyatakan palsu/tidak valid
             }
         }
 
-        return false; // Tidak ada indikasi GPS palsu
+        // Jika semua titik dalam request berada dalam radius threshold 
+        // dari titik patokan, maka tidak terindikasi palsu/valid.
+        return false;
     }
 
     public function updateAbsen($indikasi_fake_gps){
