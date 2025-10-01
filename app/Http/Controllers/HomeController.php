@@ -266,7 +266,7 @@ class HomeController extends BaseController
                 if (strtotime($tanggal) > strtotime(date('Y-m-d'))) {
                     $status_ = 'Belum absen';
                 }else{
-                    if ($tipe_pegawai == 'pegawai_administratif') {
+                    if ($tipe_pegawai == 'pegawai_administratif' || $tipe_pegawai == 'tenaga_pendidik') {
                         $jml_alfa += 1;
                     }else{
                          $mingguKe = $tanggalCarbon->weekOfMonth;
