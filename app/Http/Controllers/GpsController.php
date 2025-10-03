@@ -20,12 +20,9 @@ class GpsController extends BaseController
         $dLat = deg2rad($lat2 - $lat1);
         $dLon = deg2rad($lon2 - $lon1);
 
-        $lat1 = deg2rad($lat1);
-        $lat2 = deg2rad($lat2);
+        $a = sin($dLat / 2) * sin($dLat / 2) + 
+            cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLon / 2) * sin($dLon / 2);
 
-        $a = sin($dLat / 2) * sin($dLat / 2) +
-             sin($dLon / 2) * sin($dLon / 2) * cos($lat1) * cos($lat2); 
-        
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a)); 
 
         return $earthRadius * $c; // Jarak dalam meter
@@ -39,14 +36,6 @@ class GpsController extends BaseController
         float $patokanLatitude, 
         float $thresholdMeter // Ambang batas sekarang dalam Meter!
     ) {
-
-        dd([
-            'Patokan Longitude (Seharusnya 119.4797...)' => $patokanLongitude,
-            'Patokan Latitude (Seharusnya -5.1936...)' => $patokanLatitude,
-            'Request Longitude Pertama (Seharusnya 119.4317...)' => (float) $longitudesArray[0],
-            'Request Latitude Pertama (Seharusnya -5.1728...)' => (float) $latitudesArray[0],
-            'Threshold' => $thresholdMeter
-        ]);
 
         if (count($longitudesArray) !== count($latitudesArray)) {
             return true;
