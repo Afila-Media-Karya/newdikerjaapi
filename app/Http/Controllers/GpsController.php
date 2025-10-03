@@ -56,6 +56,12 @@ class GpsController extends BaseController
                 $patokanLongitude
             );
 
+            dd([
+                'Distance (Meters)' => $distance,
+                'Threshold (Meters)' => $thresholdMeter,
+                'Check Result' => $distance > $thresholdMeter // Seharusnya TRUE
+            ]);
+
             // Jika jarak melebihi ambang batas (misalnya 7500 meter)
             if ($distance > $thresholdMeter) {
                 // $this->log('Jarak terdeteksi: ' . $distance . ' meter. Palsu!');
