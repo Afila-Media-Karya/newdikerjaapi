@@ -15,7 +15,7 @@ class GpsController extends BaseController
         array $latitudesArray, 
         float $patokanLongitude, 
         float $patokanLatitude, 
-        float $threshold = 0.07 // Pastikan default yang masuk akal
+        float $threshold = 0.09 // Pastikan default yang masuk akal
     ) {
         // Pastikan kedua array memiliki jumlah elemen yang sama (Logika bagus, biarkan)
         if (count($longitudesArray) !== count($latitudesArray)) {
@@ -33,8 +33,6 @@ class GpsController extends BaseController
 
             // Jika salah satu selisih melebihi ambang batas, terindikasi palsu (atau di luar area kerja)
             if ($diffLongitude > $threshold || $diffLatitude > $threshold) {
-                // Jika Anda ingin menganggap data GPS dari client adalah 'palsu' jika
-                // ada pergerakan di luar radius 7.7 km (threshold 0.07) dari patokan.
                 return true; // Dinyatakan palsu/tidak valid
             }
         }
@@ -65,7 +63,7 @@ class GpsController extends BaseController
         // Pastikan Anda mendapatkan data longitude dan latitude dari request
         $longitudes = $request->input('longitudes');
         $latitudes = $request->input('latitudes');
-        $threshold = 0.07;
+        $threshold = 0.09;
         // dd($longitudes, $latitudes); // Hapus dd() setelah pengujian
 
         $data = User::where('users.id', Auth::user()->id)
