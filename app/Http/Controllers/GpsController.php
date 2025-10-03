@@ -10,36 +10,60 @@ use DB;
 
 class GpsController extends BaseController
 {
+
+    private function haversineDistance(float $lat1, float $lon1, float $lat2, float $lon2): float
+    {
+        // Radius Bumi dalam meter
+        $earthRadius = 6371000; 
+
+        // Konversi derajat ke radian
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLon = deg2rad($lon2 - $lon1);
+
+        $lat1 = deg2rad($lat1);
+        $lat2 = deg2rad($lat2);
+
+        $a = sin($dLat / 2) * sin($dLat / 2) +
+             sin($dLon / 2) * sin($dLon / 2) * cos($lat1) * cos($lat2); 
+        
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a)); 
+
+        return $earthRadius * $c; // Jarak dalam meter
+    }
+
+
     public function detectFakeGps(
         array $longitudesArray, 
         array $latitudesArray, 
         float $patokanLongitude, 
         float $patokanLatitude, 
-        float $threshold = 0.09 // Pastikan default yang masuk akal
+        float $thresholdMeter // Ambang batas sekarang dalam Meter!
     ) {
-        // Pastikan kedua array memiliki jumlah elemen yang sama (Logika bagus, biarkan)
         if (count($longitudesArray) !== count($latitudesArray)) {
-            return true; 
+            return true;
         }
         
         // Iterasi setiap pasang koordinat
         for ($i = 0; $i < count($longitudesArray); $i++) {
-            $longitude = (float) $longitudesArray[$i]; // Pastikan konversi ke float
-            $latitude = (float) $latitudesArray[$i];   // Pastikan konversi ke float
+            $longitude = (float) $longitudesArray[$i];
+            $latitude = (float) $latitudesArray[$i];
 
-            // Hitung selisih absolut untuk longitude dan latitude
-            $diffLongitude = abs($longitude - $patokanLongitude);
-            $diffLatitude = abs($latitude - $patokanLatitude);
+            // HITUNG JARAK NYATA MENGGUNAKAN HAVERSINE
+            $distance = $this->haversineDistance(
+                $latitude, 
+                $longitude, 
+                $patokanLatitude, 
+                $patokanLongitude
+            );
 
-            // Jika salah satu selisih melebihi ambang batas, terindikasi palsu (atau di luar area kerja)
-            if ($diffLongitude > $threshold || $diffLatitude > $threshold) {
-                return true; // Dinyatakan palsu/tidak valid
+            // Jika jarak melebihi ambang batas (misalnya 7500 meter)
+            if ($distance > $thresholdMeter) {
+                // $this->log('Jarak terdeteksi: ' . $distance . ' meter. Palsu!');
+                return true; // Indikasi GPS palsu/di luar jangkauan
             }
         }
 
-        // Jika semua titik dalam request berada dalam radius threshold 
-        // dari titik patokan, maka tidak terindikasi palsu/valid.
-        return false;
+        return false; // Tidak ada indikasi GPS palsu
     }
 
     public function updateAbsen($indikasi_fake_gps){
@@ -63,7 +87,6 @@ class GpsController extends BaseController
         // Pastikan Anda mendapatkan data longitude dan latitude dari request
         $longitudes = $request->input('longitudes');
         $latitudes = $request->input('latitudes');
-        $threshold = 0.09;
         // dd($longitudes, $latitudes); // Hapus dd() setelah pengujian
 
         $data = User::where('users.id', Auth::user()->id)
@@ -80,6 +103,8 @@ class GpsController extends BaseController
         // Ambil nilai patokan dari hasil query
         $patokanLongitude = (float) $data->long;
         $patokanLatitude = (float) $data->lat;
+
+        $threshold = 7500;
         
         // Tambahkan validasi untuk latitudes
         if (!is_array($longitudes) || !is_array($latitudes) || !is_numeric($patokanLongitude) || !is_numeric($patokanLatitude)) {
