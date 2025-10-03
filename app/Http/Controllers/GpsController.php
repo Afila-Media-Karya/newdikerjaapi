@@ -39,6 +39,15 @@ class GpsController extends BaseController
         float $patokanLatitude, 
         float $thresholdMeter // Ambang batas sekarang dalam Meter!
     ) {
+
+        dd([
+            'Patokan Longitude (Seharusnya 119.4797...)' => $patokanLongitude,
+            'Patokan Latitude (Seharusnya -5.1936...)' => $patokanLatitude,
+            'Request Longitude Pertama (Seharusnya 119.4317...)' => (float) $longitudesArray[0],
+            'Request Latitude Pertama (Seharusnya -5.1728...)' => (float) $latitudesArray[0],
+            'Threshold' => $thresholdMeter
+        ]);
+
         if (count($longitudesArray) !== count($latitudesArray)) {
             return true;
         }
