@@ -107,6 +107,13 @@ class GpsController extends BaseController
             ->join('tb_lokasi as tb_lokasi_apel', 'tb_jabatan.id_lokasi_apel', '=', 'tb_lokasi_apel.id')
             ->first();
         
+            dd([
+    'Patokan dari DB Longitude' => (float) $data->long,
+    'Patokan dari DB Latitude' => (float) $data->lat,
+    'Target Koordinat Nipah (Long)' => '119.44965802173418',
+    'Target Koordinat Nipah (Lat)' => '-5.138674748961975'
+]);
+
         // Ambil nilai patokan dari hasil query
         $patokanLongitude = (float) $data->long;
         $patokanLatitude = (float) $data->lat;
