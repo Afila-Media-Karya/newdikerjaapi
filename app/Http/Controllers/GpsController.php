@@ -43,6 +43,9 @@ class GpsController extends BaseController
             return true;
         }
         
+        // Inisialisasi array untuk debugging (PENTING)
+        $jarakTerdokumentasi = []; 
+        
         // Iterasi setiap pasang koordinat
         for ($i = 0; $i < count($longitudesArray); $i++) {
             $longitude = (float) $longitudesArray[$i];
@@ -55,21 +58,21 @@ class GpsController extends BaseController
                 $patokanLatitude, 
                 $patokanLongitude
             );
+            
+            // Simpan jarak (untuk keperluan debugging, bisa dihapus di Production)
+            $jarakTerdokumentasi[] = round($distance, 2) . ' meter';
 
-            dd([
-                'Distance (Meters)' => $distance,
-                'Threshold (Meters)' => $thresholdMeter,
-                'Check Result' => $distance > $thresholdMeter // Seharusnya TRUE
-            ]);
-
-            // Jika jarak melebihi ambang batas (misalnya 7500 meter)
+            // **LOGIKA PENTING: Jika ada satu saja titik yang melebihi ambang batas, LANGSUNG KEMBALIKAN TRUE.**
             if ($distance > $thresholdMeter) {
-                // $this->log('Jarak terdeteksi: ' . $distance . ' meter. Palsu!');
-                return true; // Indikasi GPS palsu/di luar jangkauan
+                // Jika Anda mengalami kegagalan, uncomment baris ini untuk melihat detailnya:
+                // dd(['FAIL', 'Threshold' => $thresholdMeter, 'Gagal pada Jarak' => $distance, 'Semua Jarak' => $jarakTerdokumentasi]);
+                return true; 
             }
-        }
 
-        return false; // Tidak ada indikasi GPS palsu
+        }
+        
+        // Jika semua titik berada dalam batas, kembalikan FALSE.
+        return false;
     }
 
     public function updateAbsen($indikasi_fake_gps){
