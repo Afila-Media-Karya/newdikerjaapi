@@ -111,7 +111,8 @@ class GpsController extends BaseController
         $patokanLongitude = (float) $data->long;
         $patokanLatitude = (float) $data->lat;
 
-        $threshold = 7500;
+        $threshold = 7500; // 30% pengurangan daru treshhold
+        // buat dinamis nilai tresholdnya
         
         // Tambahkan validasi untuk latitudes
         if (!is_array($longitudes) || !is_array($latitudes) || !is_numeric($patokanLongitude) || !is_numeric($patokanLatitude)) {
