@@ -96,7 +96,7 @@ class ProfileController extends BaseController
                         ->exists();
 
             if ($cekDuplikasi) {
-                return $this->sendError('Gagal', 'Device sudah digunakan oleh pegawai lain.', 422);
+                return $this->sendError('Device sudah digunakan oleh pegawai lain.', 'Gagal.', 422);
             }
 
             $data->status_verifikasi = $request->status_verifikasi;
