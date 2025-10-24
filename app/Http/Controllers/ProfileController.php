@@ -90,6 +90,15 @@ class ProfileController extends BaseController
         $data = array();
         try {
             $data = Pegawai::where('id',Auth::user()->id_pegawai)->first();
+
+            $cekDuplikasi = Pegawai::where('face_character', $request->face_character)
+                        ->where('id', '!=', Auth::user()->id_pegawai) // Kecualikan data pegawai yang sedang di-update
+                        ->exists();
+
+            if ($cekDuplikasi) {
+                return $this->sendError('Gagal', 'Device sudah digunakan oleh pegawai lain.', 422);
+            }
+
             $data->status_verifikasi = $request->status_verifikasi;
             $data->face_character = $request->face_character;
             $data->status_rekam = 1;
