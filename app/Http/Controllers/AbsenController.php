@@ -9,30 +9,74 @@ use DB;
 use App\Models\Absen;
 use App\Http\Requests\PresensiRequest;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 
 class AbsenController extends BaseController
 {
     
-    public function checkAbsen(){
-        $data = array();
-        try {
-            $query = DB::table('tb_absen')->select('status','waktu_masuk','waktu_keluar')->where('id_pegawai',Auth::user()->id_pegawai)->where('tanggal_absen',date('Y-m-d'))->first();
+    // public function checkAbsen(){
+    //     $data = array();
+    //     try {
+    //         $query = DB::table('tb_absen')->select('status','waktu_masuk','waktu_keluar')->where('id_pegawai',Auth::user()->id_pegawai)->where('tanggal_absen',date('Y-m-d'))->first();
 
+    //         if (is_null($query)) {
+    //             $data['status'] = '-';
+    //             $data['checkin'] = false;
+    //             $data['checkout'] = false;
+    //         }else{
+    //             $data['status'] = $query->status;
+    //              if ($query->waktu_masuk && is_null($query->waktu_keluar)) {
+    //                 $data['status'] = $query->status;
+    //                 $data['checkin'] = true;
+    //                 $data['checkout'] = false;
+    //              }else {
+    //                 $data['status'] = $query->status;
+    //                 $data['checkin'] = true;
+    //                 $data['checkout'] = true;
+    //              }
+    //         }
+
+    //     } catch (\Exception $e) {
+    //         return $this->sendError($e->getMessage(), $e->getMessage(), 200);
+    //     }
+    //     return $this->sendResponse($data, 'Check absen Success');
+    // }
+
+    public function checkAbsen(){
+        try {
+            $idPegawai = Auth::user()->id_pegawai;
+            $tanggalHariIni = date('Y-m-d');
+            
+            // 1. Definisikan Cache Key Unik
+            // Key mencakup ID Pegawai dan Tanggal (karena data berubah setiap hari)
+            $cacheKey = 'absen_status_' . $idPegawai . '_' . $tanggalHariIni;
+            $ttlSeconds = 10; // 10 Detik
+
+            // 2. Gunakan Cache::remember() untuk membungkus query DB
+            $query = Cache::remember($cacheKey, $ttlSeconds, function () use ($idPegawai, $tanggalHariIni) {
+                return DB::table('tb_absen')
+                    ->select('status','waktu_masuk','waktu_keluar')
+                    ->where('id_pegawai', $idPegawai)
+                    ->where('tanggal_absen', $tanggalHariIni)
+                    ->first();
+            });
+
+            $data = [];
             if (is_null($query)) {
                 $data['status'] = '-';
                 $data['checkin'] = false;
                 $data['checkout'] = false;
-            }else{
+            } else {
                 $data['status'] = $query->status;
-                 if ($query->waktu_masuk && is_null($query->waktu_keluar)) {
-                    $data['status'] = $query->status;
+                
+                // Logika absensi
+                if ($query->waktu_masuk && is_null($query->waktu_keluar)) {
                     $data['checkin'] = true;
                     $data['checkout'] = false;
-                 }else {
-                    $data['status'] = $query->status;
+                } else {
                     $data['checkin'] = true;
                     $data['checkout'] = true;
-                 }
+                }
             }
 
         } catch (\Exception $e) {

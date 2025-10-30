@@ -11,43 +11,125 @@ use App\Models\Aktivitas;
 use App\Traits\Kehadiran;
 use App\Traits\Kinerja;
 use App\Traits\Pegawai;
+use Illuminate\Support\Facades\Cache;
+
 class AktivitasController extends BaseController
 {
     use Kehadiran;
     use Kinerja;
         use Pegawai;
+    // public function option_master_aktivitas(){
+    //   $data = array();
+    //     try {
+    //         // $jabatan = DB::table("tb_jabatan")->select('tb_master_jabatan.id_kelompok_jabatan')->join('tb_master_jabatan','tb_jabatan.id_master_jabatan','=','tb_master_jabatan.id')->where("tb_jabatan.id_pegawai",Auth::user()->id_pegawai)->first();
+
+    //         $jabatan = $this->findJabatan();
+
+    //         $data = DB::table('tb_master_aktivitas')
+    //         ->select('id','aktivitas as value','satuan','waktu')
+    //         ->union(
+    //             DB::table('tb_master_aktivitas')
+    //             ->select('uuid','aktivitas as value','satuan','waktu')
+    //             ->where('jenis','umum')
+    //         )
+    //         ->where('id_kelompok_jabatan',$jabatan->id_kelompok_jabatan)
+    //         ->where('jenis','khusus')
+    //         ->get();
+
+    //     } catch (\Exception $e) {
+    //         return $this->sendError($e->getMessage(), $e->getMessage(), 200);
+    //     }
+    //     return $this->sendResponse($data, 'Option master aktivitas Success');
+    // }
+
     public function option_master_aktivitas(){
       $data = array();
-        try {
-            // $jabatan = DB::table("tb_jabatan")->select('tb_master_jabatan.id_kelompok_jabatan')->join('tb_master_jabatan','tb_jabatan.id_master_jabatan','=','tb_master_jabatan.id')->where("tb_jabatan.id_pegawai",Auth::user()->id_pegawai)->first();
+        
+    try {
+        // 1. Ambil data jabatan yang diperlukan untuk filter
+        $jabatan = $this->findJabatan();
 
-            $jabatan = $this->findJabatan();
-
-            $data = DB::table('tb_master_aktivitas')
-            ->select('id','aktivitas as value','satuan','waktu')
-            ->union(
-                DB::table('tb_master_aktivitas')
-                ->select('uuid','aktivitas as value','satuan','waktu')
-                ->where('jenis','umum')
-            )
-            ->where('id_kelompok_jabatan',$jabatan->id_kelompok_jabatan)
-            ->where('jenis','khusus')
-            ->get();
-
-        } catch (\Exception $e) {
-            return $this->sendError($e->getMessage(), $e->getMessage(), 200);
+        // Pastikan objek jabatan valid dan memiliki id_kelompok_jabatan
+        if (!isset($jabatan->id_kelompok_jabatan)) {
+            return $this->sendError('Kelompok Jabatan tidak ditemukan.', 'Gagal', 404);
         }
-        return $this->sendResponse($data, 'Option master aktivitas Success');
+
+        // 2. Konfigurasi Caching
+        $kelompokJabatanId = $jabatan->id_kelompok_jabatan;
+        
+        // Key cache unik berdasarkan ID Kelompok Jabatan
+        $cacheKey = 'master_aktivitas_options_' . $kelompokJabatanId;
+        $ttlSeconds = 86400; // 24 Jam (Satu Hari)
+
+        // 3. Gunakan Cache::remember()
+        $data = Cache::remember($cacheKey, $ttlSeconds, function () use ($kelompokJabatanId) {
+            
+            // Query Database yang Menggunakan UNION (Dikombinasikan dalam closure)
+            $queryKhusus = DB::table('tb_master_aktivitas')
+                ->select('id','aktivitas as value','satuan','waktu')
+                ->where('id_kelompok_jabatan', $kelompokJabatanId)
+                ->where('jenis','khusus');
+            
+            // Union Query (Jenis Umum)
+            $masterAktivitas = DB::table('tb_master_aktivitas')
+                ->select('id','aktivitas as value','satuan','waktu') // Menggunakan 'id' untuk konsistensi tipe
+                ->where('jenis','umum')
+                ->union($queryKhusus)
+                ->get();
+            
+            return $masterAktivitas;
+        });
+
+    } catch (\Exception $e) {
+        return $this->sendError($e->getMessage(), $e->getMessage(), 200);
     }
+    return $this->sendResponse($data, 'Option master aktivitas Success');
+}
+
+    // public function list(){
+    //     $data = array();
+    //     $tanggal = request('tanggal');
+    //     try {
+    //         $data = DB::table('tb_aktivitas')->select('id','uuid','aktivitas','waktu')->where('id_pegawai',Auth::user()->id_pegawai)->where('tanggal',$tanggal)->get();
+    //     } catch (\Exception $e) {
+    //        return $this->sendError($e->getMessage(), $e->getMessage(), 200);
+    //     }
+    //     return $this->sendResponse($data, 'List aktivitas fetched Success');
+    // }
 
     public function list(){
         $data = array();
         $tanggal = request('tanggal');
-        try {
-            $data = DB::table('tb_aktivitas')->select('id','uuid','aktivitas','waktu')->where('id_pegawai',Auth::user()->id_pegawai)->where('tanggal',$tanggal)->get();
-        } catch (\Exception $e) {
-           return $this->sendError($e->getMessage(), $e->getMessage(), 200);
+        
+        // Pastikan tanggal tersedia dari request
+        if (!$tanggal) {
+            return $this->sendError('Parameter tanggal diperlukan.', 'Error Validasi', 400);
         }
+        
+        try {
+            // 1. Konfigurasi Caching
+            $pegawaiId = Auth::user()->id_pegawai;
+            // Key cache unik berdasarkan ID Pegawai dan Tanggal
+            $cacheKey = 'aktivitas_list_' . $pegawaiId . '_' . $tanggal;
+            $ttlSeconds = 60; // 1 Menit (ubah dari 300 menjadi 60)
+
+            // 2. Gunakan Cache::remember()
+            $data = Cache::remember($cacheKey, $ttlSeconds, function () use ($pegawaiId, $tanggal) {
+                
+                // Query Database
+                $aktivitasList = DB::table('tb_aktivitas')
+                    ->select('id','uuid','aktivitas','waktu')
+                    ->where('id_pegawai', $pegawaiId)
+                    ->where('tanggal', $tanggal)
+                    ->get();
+                
+                return $aktivitasList;
+            });
+
+        } catch (\Exception $e) {
+        return $this->sendError($e->getMessage(), $e->getMessage(), 200);
+        }
+        
         return $this->sendResponse($data, 'List aktivitas fetched Success');
     }
 
