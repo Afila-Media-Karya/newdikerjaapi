@@ -16,4 +16,10 @@ trait Option
     public function pendidikan(){
         return DB::table("tb_pendidikan")->select('id','pendidikan as value')->get();
     }
+
+    public function addJitter($baseTtlSeconds, $maxJitterSeconds = 60) {
+        // Menghasilkan angka acak antara 1 detik hingga $maxJitterSeconds
+        $jitter = random_int(1, $maxJitterSeconds);
+        return $baseTtlSeconds + $jitter;
+    }
 }

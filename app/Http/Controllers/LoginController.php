@@ -12,10 +12,12 @@ use DB;
 use App\Traits\Kehadiran;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
+use App\Traits\Option;
 
 class LoginController extends BaseController
 {
     use Kehadiran;
+    use Option;
     public function signIn(LoginRequest $request){
         // return $request;
         $path = explode('/', request()->path());
@@ -221,8 +223,11 @@ class LoginController extends BaseController
     {
         $userId = Auth::user()->id;
         $cacheKey = 'user_data_' . $userId;
-        $ttlSeconds = 46800; 
+        // TTL Dasar: 60 detik (1 menit)
+        $baseTtlSeconds = 60; 
         
+        // Terapkan Jitter: Tambahkan acak 1 hingga 5 detik (cukup untuk TTL yang singkat)
+        $ttlSeconds =  $this->addJitter($baseTtlSeconds, 5);
         try {
             $data = Cache::remember($cacheKey, $ttlSeconds, function () use ($userId) {
                 

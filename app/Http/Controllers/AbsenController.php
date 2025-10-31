@@ -10,9 +10,10 @@ use App\Models\Absen;
 use App\Http\Requests\PresensiRequest;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
-
+use App\Traits\Option;
 class AbsenController extends BaseController
 {
+    use Option;
     
     // public function checkAbsen(){
     //     $data = array();
@@ -47,10 +48,8 @@ class AbsenController extends BaseController
             $idPegawai = Auth::user()->id_pegawai;
             $tanggalHariIni = date('Y-m-d');
             
-            // 1. Definisikan Cache Key Unik
-            // Key mencakup ID Pegawai dan Tanggal (karena data berubah setiap hari)
-            $cacheKey = 'absen_status_' . $idPegawai . '_' . $tanggalHariIni;
-            $ttlSeconds = 10; // 10 Detik
+            $baseTtlSeconds = 10; 
+            $ttlSeconds = $this->addJitter($baseTtlSeconds, 5);
 
             // 2. Gunakan Cache::remember() untuk membungkus query DB
             $query = Cache::remember($cacheKey, $ttlSeconds, function () use ($idPegawai, $tanggalHariIni) {
