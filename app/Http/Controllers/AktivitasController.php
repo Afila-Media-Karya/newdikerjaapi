@@ -12,12 +12,14 @@ use App\Traits\Kehadiran;
 use App\Traits\Kinerja;
 use App\Traits\Pegawai;
 use Illuminate\Support\Facades\Cache;
+use App\Traits\Option;
 
 class AktivitasController extends BaseController
 {
     use Kehadiran;
     use Kinerja;
         use Pegawai;
+        use Option;
     // public function option_master_aktivitas(){
     //   $data = array();
     //     try {
@@ -59,7 +61,8 @@ class AktivitasController extends BaseController
         
         // Key cache unik berdasarkan ID Kelompok Jabatan
         $cacheKey = 'master_aktivitas_options_' . $kelompokJabatanId;
-        $ttlSeconds = 86400; // 24 Jam (Satu Hari)
+                    $baseTtlSeconds = 60; 
+            $ttlSeconds =  $this->addJitter($baseTtlSeconds, 5);
 
         // 3. Gunakan Cache::remember()
         $data = Cache::remember($cacheKey, $ttlSeconds, function () use ($kelompokJabatanId) {
@@ -111,8 +114,8 @@ class AktivitasController extends BaseController
             $pegawaiId = Auth::user()->id_pegawai;
             // Key cache unik berdasarkan ID Pegawai dan Tanggal
             $cacheKey = 'aktivitas_list_' . $pegawaiId . '_' . $tanggal;
-            $ttlSeconds = 60; // 1 Menit (ubah dari 300 menjadi 60)
-
+                                $baseTtlSeconds = 60; 
+            $ttlSeconds =  $this->addJitter($baseTtlSeconds, 5);
             // 2. Gunakan Cache::remember()
             $data = Cache::remember($cacheKey, $ttlSeconds, function () use ($pegawaiId, $tanggal) {
                 

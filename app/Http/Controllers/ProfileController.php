@@ -16,6 +16,7 @@ use DB;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
 
+
 class ProfileController extends BaseController
 {
     use Option;
@@ -70,7 +71,8 @@ class ProfileController extends BaseController
     // 1. Konfigurasi Caching
     $pegawaiId = Auth::user()->id_pegawai;
     $cacheKey = 'foto_profil_' . $pegawaiId;
-    $ttlSeconds = 86400; // 24 Jam (Satu Hari)
+                $baseTtlSeconds = 60; 
+            $ttlSeconds =  $this->addJitter($baseTtlSeconds, 5);
 
     try {
         // 2. Gunakan Cache::remember() untuk mendapatkan Data Biner Gambar
@@ -182,7 +184,8 @@ class ProfileController extends BaseController
         // 1. Konfigurasi Caching
         $cacheKey = 'master_status_kawin_options';
         // 1 Minggu dalam detik (7 * 24 * 60 * 60)
-        $ttlSeconds = 604800; 
+                    $baseTtlSeconds = 60; 
+            $ttlSeconds =  $this->addJitter($baseTtlSeconds, 5);
 
         // 2. Gunakan Cache::remember()
         $data = Cache::remember($cacheKey, $ttlSeconds, function () {
@@ -217,7 +220,8 @@ class ProfileController extends BaseController
         // 1. Konfigurasi Caching
         $cacheKey = 'master_golongan_options';
         // 1 Minggu dalam detik (7 * 24 * 60 * 60)
-        $ttlSeconds = 604800; 
+                    $baseTtlSeconds = 60; 
+            $ttlSeconds =  $this->addJitter($baseTtlSeconds, 5);
 
         // 2. Gunakan Cache::remember()
         $data = Cache::remember($cacheKey, $ttlSeconds, function () {
@@ -252,7 +256,8 @@ class ProfileController extends BaseController
         // 1. Konfigurasi Caching
         $cacheKey = 'master_pendidikan_options';
         // 1 Minggu dalam detik (7 * 24 * 60 * 60)
-        $ttlSeconds = 604800; 
+                    $baseTtlSeconds = 60; 
+            $ttlSeconds =  $this->addJitter($baseTtlSeconds, 5);
 
         // 2. Gunakan Cache::remember()
         $data = Cache::remember($cacheKey, $ttlSeconds, function () {
@@ -298,7 +303,8 @@ class ProfileController extends BaseController
         
         // Key cache unik berdasarkan ID Pegawai dan Tahun
         $cacheKey = 'skp_options_' . $pegawaiId . '_' . $tahunSaatIni;
-        $ttlSeconds = 86400; // 24 Jam (Satu Hari)
+                    $baseTtlSeconds = 60; 
+            $ttlSeconds =  $this->addJitter($baseTtlSeconds, 5);
 
         // 2. Gunakan Cache::remember()
         $data = Cache::remember($cacheKey, $ttlSeconds, function () use ($pegawaiId, $tahunSaatIni) {

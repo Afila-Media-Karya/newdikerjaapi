@@ -11,6 +11,7 @@ use App\Traits\Kinerja;
 use App\Traits\Pegawai;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
+use App\Traits\Option;
 
 class HomeController extends BaseController
 {
@@ -18,6 +19,7 @@ class HomeController extends BaseController
     use Kehadiran;
     use Kinerja;
     use Pegawai;
+            use Option;
 
     // public function pegawai(){
     //     $data = array();
@@ -60,7 +62,8 @@ class HomeController extends BaseController
 
             $idPegawai = $findJabatan->id_pegawai;
             $cacheKey = 'pegawai_data_' . $idPegawai;
-            $ttlSeconds = 46800; // 13 Jam
+            $baseTtlSeconds = 60; 
+            $ttlSeconds =  $this->addJitter($baseTtlSeconds, 5);
 
             // Pastikan kita memiliki ID Pegawai yang valid sebelum mencoba cache
             if (!$idPegawai) {
@@ -132,7 +135,8 @@ class HomeController extends BaseController
         $idPegawai = Auth::user()->id_pegawai;
         // Key cache harus unik berdasarkan ID Pegawai yang sedang login
         $cacheKey = 'atasan_data_' . $idPegawai;
-        $ttlSeconds = 46800; // 13 Jam
+        $baseTtlSeconds = 60; 
+        $ttlSeconds =  $this->addJitter($baseTtlSeconds, 5);
 
         try {
             // 2. Gunakan Cache::remember() untuk membungkus seluruh logika akses DB
@@ -200,7 +204,8 @@ class HomeController extends BaseController
             // Key cache unik berdasarkan ID Pegawai dan Bulan/Tahun
             $tahun = date('Y');
             $cacheKey = 'rekap_kinerja_' . $pegawaiId . '_' . $tahun . '_' . $bulan;
-            $ttlSeconds = 21600; // 6 Jam (6 * 60 * 60)
+            $baseTtlSeconds = 60; 
+            $ttlSeconds =  $this->addJitter($baseTtlSeconds, 5);
 
             // 2. Gunakan Cache::remember() untuk membungkus helper method yang berat
             $data = Cache::remember($cacheKey, $ttlSeconds, function () use ($bulan) {
@@ -244,7 +249,8 @@ class HomeController extends BaseController
             // Key cache unik berdasarkan ID Pegawai dan Bulan/Tahun
             $tahun = date('Y');
             $cacheKey = 'rekap_kehadiran_' . $pegawaiId . '_' . $tahun . '_' . $bulan;
-            $ttlSeconds = 21600; // 6 Jam (6 * 60 * 60)
+            $baseTtlSeconds = 60; 
+            $ttlSeconds =  $this->addJitter($baseTtlSeconds, 5);
 
             // 2. Gunakan Cache::remember() untuk membungkus helper method yang berat
             $data = Cache::remember($cacheKey, $ttlSeconds, function () use ($bulan) {
@@ -727,7 +733,8 @@ class HomeController extends BaseController
         
         // 1. Definisikan Cache Key Unik (Berdasarkan Pegawai, Bulan, dan Tahun)
         $cacheKey = 'tpp_data_' . $pegawaiId . '_' . $tahun . '_' . $bulan;
-        $ttlSeconds = 3600; // 1 Jam
+        $baseTtlSeconds = 60; 
+        $ttlSeconds =  $this->addJitter($baseTtlSeconds, 5);
         
         // 2. Gunakan Cache::remember() untuk Query Database Berat
         $data = Cache::remember($cacheKey, $ttlSeconds, function () use ($tahun, $bulan, $findJabatan) {
