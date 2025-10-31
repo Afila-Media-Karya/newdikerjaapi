@@ -47,7 +47,7 @@ class AbsenController extends BaseController
         try {
             $idPegawai = Auth::user()->id_pegawai;
             $tanggalHariIni = date('Y-m-d');
-            
+             $cacheKey = 'absen_status_' . $idPegawai . '_' . $tanggalHariIni;
             $baseTtlSeconds = 10; 
             $ttlSeconds = $this->addJitter($baseTtlSeconds, 5);
 
