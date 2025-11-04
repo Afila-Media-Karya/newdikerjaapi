@@ -67,60 +67,60 @@ class ProfileController extends BaseController
     // }
 
     public function getImageProfil(){
-    
-    // 1. Konfigurasi Caching
-    $pegawaiId = Auth::user()->id_pegawai;
-    $cacheKey = 'foto_profil_' . $pegawaiId;
-                $baseTtlSeconds = 60; 
-            $ttlSeconds =  $this->addJitter($baseTtlSeconds, 5);
+        return null;
+        // // 1. Konfigurasi Caching
+        // $pegawaiId = Auth::user()->id_pegawai;
+        // $cacheKey = 'foto_profil_' . $pegawaiId;
+        //             $baseTtlSeconds = 60; 
+        //         $ttlSeconds =  $this->addJitter($baseTtlSeconds, 5);
 
-    try {
-        // 2. Gunakan Cache::remember() untuk mendapatkan Data Biner Gambar
-        $url = Cache::remember($cacheKey, $ttlSeconds, function () use ($pegawaiId) {
+        // try {
+        //     // 2. Gunakan Cache::remember() untuk mendapatkan Data Biner Gambar
+        //     $url = Cache::remember($cacheKey, $ttlSeconds, function () use ($pegawaiId) {
+                
+        //         // Query DB untuk mendapatkan data path foto
+        //         $pegawai = Pegawai::where('id', $pegawaiId)->first();
+
+        //         // Cek Path Foto
+        //         if (is_null($pegawai) || is_null($pegawai->foto) || $pegawai->foto === "") {
+        //             // Jika tidak ada foto, kembalikan null agar cache menyimpan nilai null/kosong
+        //             return null;
+        //         }
+
+        //         // Ambil data biner dari SFTP (Operasi I/O yang mahal)
+        //         if (Storage::disk('sftp')->exists($pegawai->foto)) {
+        //             return Storage::disk('sftp')->get($pegawai->foto);
+        //         }
+                
+        //         return null; // Jika file tidak ditemukan
+        //     });
             
-            // Query DB untuk mendapatkan data path foto
-            $pegawai = Pegawai::where('id', $pegawaiId)->first();
-
-            // Cek Path Foto
-            if (is_null($pegawai) || is_null($pegawai->foto) || $pegawai->foto === "") {
-                // Jika tidak ada foto, kembalikan null agar cache menyimpan nilai null/kosong
-                return null;
-            }
-
-            // Ambil data biner dari SFTP (Operasi I/O yang mahal)
-            if (Storage::disk('sftp')->exists($pegawai->foto)) {
-                return Storage::disk('sftp')->get($pegawai->foto);
-            }
+        //     // 3. Menghasilkan Response
+        //     if (!is_null($url)) {
+        //         // Bersihkan output buffer sebelum mengirim response (untuk mencegah header error)
+        //         // Ini meniru fungsi ob_end_clean() yang Anda gunakan sebelumnya
+        //         // Namun, dalam Laravel/Lumen modern, ini jarang diperlukan.
+        //         // Jika Anda mengalami error 'Headers already sent', gunakan ob_get_clean()
+                
+        //         // Pastikan tipe konten sesuai (misal: image/jpeg, image/png, etc.)
+        //         // Jika tipe file bisa bervariasi, Anda perlu menyimpan tipe file di cache juga.
+                
+        //         return new Response($url, 200, [
+        //             'Content-Type' => 'image/png', // Sesuaikan jika tipe file berbeda
+        //             'Cache-Control' => 'max-age=' . $ttlSeconds . ', public', // Opsional: Beri tahu browser untuk cache juga
+        //         ]);
+        //     }
             
-            return null; // Jika file tidak ditemukan
-        });
+        // } catch (\Exception $e) {
+        //     // Jika terjadi error koneksi SFTP/Redis, Anda bisa logging
+        //     // atau mencoba mengambil data tanpa cache sebagai fallback.
+        //     // Untuk saat ini, kembalikan response kosong:
+        //     return response()->json(['error' => $e->getMessage()], 404);
+        // }
         
-        // 3. Menghasilkan Response
-        if (!is_null($url)) {
-            // Bersihkan output buffer sebelum mengirim response (untuk mencegah header error)
-            // Ini meniru fungsi ob_end_clean() yang Anda gunakan sebelumnya
-            // Namun, dalam Laravel/Lumen modern, ini jarang diperlukan.
-            // Jika Anda mengalami error 'Headers already sent', gunakan ob_get_clean()
-            
-            // Pastikan tipe konten sesuai (misal: image/jpeg, image/png, etc.)
-            // Jika tipe file bisa bervariasi, Anda perlu menyimpan tipe file di cache juga.
-            
-            return new Response($url, 200, [
-                'Content-Type' => 'image/png', // Sesuaikan jika tipe file berbeda
-                'Cache-Control' => 'max-age=' . $ttlSeconds . ', public', // Opsional: Beri tahu browser untuk cache juga
-            ]);
-        }
-        
-    } catch (\Exception $e) {
-        // Jika terjadi error koneksi SFTP/Redis, Anda bisa logging
-        // atau mencoba mengambil data tanpa cache sebagai fallback.
-        // Untuk saat ini, kembalikan response kosong:
-        return response()->json(['error' => $e->getMessage()], 404);
+        // // Kembalikan 404 jika foto atau path tidak valid
+        // return response()->json(['error' => 'Foto profil tidak ditemukan.'], 404);
     }
-    
-    // Kembalikan 404 jika foto atau path tidak valid
-    return response()->json(['error' => 'Foto profil tidak ditemukan.'], 404);
-}
 
     public function ubahPassword(ChangePasswordRequest $request){
         // $user = array();

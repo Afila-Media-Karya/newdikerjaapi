@@ -77,7 +77,7 @@ class AktivitasController extends BaseController
             $masterAktivitas = DB::table('tb_master_aktivitas')
                 ->select('id','aktivitas as value','satuan','waktu') // Menggunakan 'id' untuk konsistensi tipe
                 ->where('jenis','umum')
-                ->union($queryKhusus)
+                ->unionAll($queryKhusus)
                 ->get();
             
             return $masterAktivitas;
@@ -206,7 +206,10 @@ class AktivitasController extends BaseController
     }
 
     public function checkMenitKinerja($params){
-        $data = DB::table('tb_aktivitas')->select(DB::raw("SUM(waktu) as count"))->where('id_pegawai',Auth::user()->id_pegawai)->where('tanggal',$params)->first();
+        $data = DB::table('tb_aktivitas')
+            ->select(DB::raw("SUM(waktu) as count"))
+            ->where('id_pegawai',Auth::user()->id_pegawai)
+            ->where('tanggal',$params)->first();
         if($data->count == null){
             $data->count = 0;
         }
