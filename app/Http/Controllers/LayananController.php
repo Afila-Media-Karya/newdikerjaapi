@@ -17,7 +17,7 @@ class LayananController extends BaseController
     public function list(){
         $data = array();
         try {
-            $data = DB::table('tb_layanan')->select('id','uuid','nama','url','icon','keterangan')->where('status',1)->paginate(3);
+            $data = DB::table('tb_layanan')->select('id','uuid','nama','url','icon','keterangan')->where('status',1)->get();
         } catch (\Exception $th) {
            return $this->sendError($e->getMessage(), $e->getMessage(), 200);
         }

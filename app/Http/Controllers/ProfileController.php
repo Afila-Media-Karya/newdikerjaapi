@@ -184,9 +184,9 @@ class ProfileController extends BaseController
     // }
 
     public function option_status_kawin(){
-    $data = array();
+        $data = array();
     
-    try {
+        try {
         // 1. Konfigurasi Caching
         $cacheKey = 'master_status_kawin_options';
         // 1 Minggu dalam detik (7 * 24 * 60 * 60)
