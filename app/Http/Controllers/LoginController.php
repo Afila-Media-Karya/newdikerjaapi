@@ -224,7 +224,7 @@ class LoginController extends BaseController
         $userId = Auth::user()->id;
         $cacheKey = 'user_data_' . $userId;
         // TTL Dasar: 60 detik (1 menit)
-        $baseTtlSeconds = 60; 
+        $baseTtlSeconds = 15; 
         
         // Terapkan Jitter: Tambahkan acak 1 hingga 5 detik (cukup untuk TTL yang singkat)
         $ttlSeconds =  $this->addJitter($baseTtlSeconds, 5);
