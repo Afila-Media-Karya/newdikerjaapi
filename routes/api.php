@@ -11,16 +11,17 @@ use App\Http\Controllers\LayananController;
 use App\Http\Controllers\DokumenPribadiController;
 use App\Http\Controllers\SinkronisasiController;
 use App\Http\Controllers\GpsController;
+use App\Http\Controllers\LaporanApiController;
 
 
-    Route::post('/sign-in', [LoginController::class, 'signIn']);
-    Route::post('/row-insert-user', [SinkronisasiController::class, 'insert_user']);
-    Route::post('/push-master-aktivitas', [SinkronisasiController::class, 'push_master_aktivitas']);
-    Route::post('/push-tpp-jabatan', [SinkronisasiController::class, 'push_nilai_tpp_ke_jabatan']);
+Route::post('/sign-in', [LoginController::class, 'signIn']);
+Route::post('/row-insert-user', [SinkronisasiController::class, 'insert_user']);
+Route::post('/push-master-aktivitas', [SinkronisasiController::class, 'push_master_aktivitas']);
+Route::post('/push-tpp-jabatan', [SinkronisasiController::class, 'push_nilai_tpp_ke_jabatan']);
 
-    
-    Route::group(['middleware' => ['auth:sanctum']], function () {
-        Route::middleware('my-throttle')->group(function () {
+
+Route::group(['middleware' => ['auth:sanctum']], function () {
+    Route::middleware('my-throttle')->group(function () {
         Route::get('/current-user', [LoginController::class, 'current_user']);
         Route::get('/waktu-server', [HomeController::class, 'waktu_server']);
         Route::post('/check-gps', [GpsController::class, 'checkGps']);
@@ -33,7 +34,7 @@ use App\Http\Controllers\GpsController;
 
         Route::prefix('profile')->group(function () {
             Route::post('/update', [ProfileController::class, 'updateProfil']);
-            Route::get('/get-image-profil',[ProfileController::class, 'getImageProfil']);
+            Route::get('/get-image-profil', [ProfileController::class, 'getImageProfil']);
             Route::post('/ubah-password', [ProfileController::class, 'ubahPassword']);
             Route::post('/verifikasi-wajah', [ProfileController::class, 'verifikasiWajah']);
             Route::post('/hapus-wajah', [ProfileController::class, 'hapus_wajah']);
@@ -56,7 +57,7 @@ use App\Http\Controllers\GpsController;
             Route::get('/sasaran-kinerja', [HomeController::class, 'sasaran_kinerja']);
         });
 
-        Route::prefix('aktivitas')->group(function () { 
+        Route::prefix('aktivitas')->group(function () {
             Route::get('/list', [AktivitasController::class, 'list']);
             Route::post('/store', [AktivitasController::class, 'store']);
             Route::get('/show/{params}', [AktivitasController::class, 'show']);
@@ -65,7 +66,7 @@ use App\Http\Controllers\GpsController;
             Route::get('/check-menit-kinerja/{params}', [AktivitasController::class, 'checkMenitKinerja']);
         });
 
-        Route::prefix('pengumuman')->group(function () { 
+        Route::prefix('pengumuman')->group(function () {
             Route::get('/list', [HomeController::class, 'pengumuman']);
         });
 
@@ -75,7 +76,7 @@ use App\Http\Controllers\GpsController;
             Route::get('/list-cuti', [LayananController::class, 'cuti_list']);
             Route::get('/dokumen-by-cuti/{params}', [LayananController::class, 'dokumenByCuti']);
             Route::get('/dokumen-cuti-by-cuti/{params}', [LayananController::class, 'dokumenCutiByCuti']);
-            
+
             Route::get('/layanan-general', [LayananController::class, 'layananGeneral']);
 
             Route::post('/store', [LayananController::class, 'store']);
@@ -90,5 +91,9 @@ use App\Http\Controllers\GpsController;
         });
 
         Route::post('/logout', [LoginController::class, 'revoke']);
-        });
     });
+
+    Route::prefix('set-laporan')->group(function () {
+        Route::get('/laporan-kehadiran-pegawai', [LaporanApiController::class, 'export_pegawai_bulan'])->name('setlaporan.laporan.kehadiran.export');
+    });
+});
