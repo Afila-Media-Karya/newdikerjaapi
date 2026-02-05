@@ -19,6 +19,11 @@ Route::post('/row-insert-user', [SinkronisasiController::class, 'insert_user']);
 Route::post('/push-master-aktivitas', [SinkronisasiController::class, 'push_master_aktivitas']);
 Route::post('/push-tpp-jabatan', [SinkronisasiController::class, 'push_nilai_tpp_ke_jabatan']);
 
+Route::prefix('set-laporan')->group(function () {
+    Route::get('/laporan-kehadiran-pegawai', [LaporanApiController::class, 'export_pegawai_bulan'])->name('setlaporan.laporan.kehadiran.export');
+    Route::get('/laporan-kinerja-pegawai', [LaporanApiController::class, 'export_to_kinerja_pegawai'])->name('setlaporan.laporan.kinerja.export');
+    Route::get('/laporan-tpp-pegawai', [LaporanApiController::class, 'export_to_tpp_pegawai'])->name('setlaporan.laporan.tpp.export');
+});
 
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::middleware('my-throttle')->group(function () {
@@ -91,11 +96,5 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         });
 
         Route::post('/logout', [LoginController::class, 'revoke']);
-    });
-
-    Route::prefix('set-laporan')->group(function () {
-        Route::get('/laporan-kehadiran-pegawai', [LaporanApiController::class, 'export_pegawai_bulan'])->name('setlaporan.laporan.kehadiran.export');
-        Route::get('/laporan-kinerja-pegawai', [LaporanApiController::class, 'export_to_kinerja_pegawai'])->name('setlaporan.laporan.kinerja.export');
-        Route::get('/laporan-tpp-pegawai', [LaporanApiController::class, 'export_to_tpp_pegawai'])->name('setlaporan.laporan.tpp.export');
     });
 });
