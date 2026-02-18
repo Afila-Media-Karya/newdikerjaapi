@@ -7,8 +7,9 @@ use Illuminate\Support\Facades\DB;
 use Auth;
 trait Kehadiran
 {
-    public function jumlahHariKerja($bulan){
-       $tahun = date('Y');
+    public function jumlahHariKerja($bulan)
+    {
+        $tahun = date('Y');
         $tanggalAwal = Carbon::create($tahun, $bulan, 1)->startOfMonth();
         $tanggalAkhir = Carbon::create($tahun, $bulan, 1)->endOfMonth();
 
@@ -40,17 +41,19 @@ trait Kehadiran
         return $jumlahHari;
     }
 
-    public function jmlAlfa($bulan){
+    public function jmlAlfa($bulan)
+    {
         $jumlahHariKerja = $this->jumlahHariKerja($bulan);
-          $jumlahAlfa = DB::table('tb_absen')
+        $jumlahAlfa = DB::table('tb_absen')
             ->whereMonth('tanggal_absen', $bulan)
             ->count();
 
-            return $jumlahHariKerja - $jumlahAlfa;
+        return $jumlahHariKerja - $jumlahAlfa;
     }
 
-    public function hitungTelat($bulan){
-        $absen = DB::table('tb_absen')->where('id_pegawai', Auth::user()->id_pegawai)->whereMonth('tanggal_absen',$bulan)->get();
+    public function hitungTelat($bulan)
+    {
+        $absen = DB::table('tb_absen')->where('id_pegawai', Auth::user()->id_pegawai)->whereMonth('tanggal_absen', $bulan)->get();
         // return $absen;
         $kmk_30 = 0;
         $kmk_60 = 0;
@@ -91,7 +94,7 @@ trait Kehadiran
                 if ($telatMasuk >= 1 && $telatMasuk <= 30) {
                     $kmk_30++;
                 }
-                
+
                 if ($telatMasuk >= 31 && $telatMasuk <= 60) {
                     $kmk_60++;
                 }
@@ -107,7 +110,7 @@ trait Kehadiran
                 if ($cepatPulang >= 1 && $cepatPulang <= 30) {
                     $cpk_30++;
                 }
-                
+
                 if ($cepatPulang >= 31 && $cepatPulang <= 60) {
                     $cpk_60++;
                 }
@@ -135,12 +138,13 @@ trait Kehadiran
         ];
     }
 
-    public function rekapDataKehadiran($bulan){
+    public function rekapDataKehadiran($bulan)
+    {
         $source = array();
         try {
             $res_jumlah_alfa = $this->jmlAlfa($bulan) * 3;
             $source = $this->hitungTelat($bulan);
-             $res_jml_tidak_apel = $source['jumlah_tidak_apel'] * 2;
+            $res_jml_tidak_apel = $source['jumlah_tidak_apel'] * 2;
             $query = DB::table('tb_absen')
                 ->select(
                     DB::raw('COUNT(CASE WHEN status = "hadir" THEN 1 END) AS jumlah_hadir'),
@@ -152,8 +156,8 @@ trait Kehadiran
                 )
                 ->whereYear('tanggal_absen', date('Y'))
                 ->whereMonth('tanggal_absen', $bulan)
-                ->where('id_pegawai',Auth::user()->id_pegawai)
-                ->where('validation',1)
+                ->where('id_pegawai', Auth::user()->id_pegawai)
+                ->where('validation', 1)
                 ->first();
 
             $potongan_masuk_kerja = ($source['kmk_30'] * 0.5) + ($source['kmk_60'] * 1) + ($source['kmk_90'] * 1.25) + ($source['kmk_91'] * 1.5);
@@ -167,7 +171,7 @@ trait Kehadiran
                 'jumlah_sakit' => $query->jumlah_sakit,
                 'jumlah_izin' => $query->jumlah_izin,
                 'jumlah_cuti' => $query->jumlah_cuti,
-                'tanpa_keterangan' =>  $this->jmlAlfa($bulan),
+                'tanpa_keterangan' => $this->jmlAlfa($bulan),
                 'potongan' => $potongan_kehadiran
             ];
         } catch (\Exception $e) {
@@ -175,18 +179,19 @@ trait Kehadiran
         }
     }
 
-    public function checkAbsenByTanggal($pegawai, $date){
-         $data = array();
+    public function checkAbsenByTanggal($pegawai, $date)
+    {
+        $data = array();
         // if (date('D', strtotime($date)) == 'Sun') {
         //     $data = null;
         // }else{
-            
+
         // }
-        $data = DB::table('tb_absen')->select('status')->where('id_pegawai',$pegawai)->where('tanggal_absen',$date)->first();
+        $data = DB::table('tb_absen')->select('status')->where('id_pegawai', $pegawai)->where('tanggal_absen', $date)->first();
         return $data;
     }
 
-    public function konvertWaktuNakes($params, $waktu, $tanggal,$shift,$waktu_tetap,$tipe_pegawai)
+    public function konvertWaktuNakes($params, $waktu, $tanggal, $shift, $waktu_tetap, $tipe_pegawai)
     {
         $diff = '';
         $selisih_waktu = '';
@@ -199,10 +204,10 @@ trait Kehadiran
             if ($shift == 'pagi') {
                 $waktu_absen_datang = '08:00:00';
                 $waktu_absen_pulang = '14:00:00';
-            }elseif ($shift == 'siang') {
+            } elseif ($shift == 'siang') {
                 $waktu_absen_datang = '14:00:00';
                 $waktu_absen_pulang = '21:00:00';
-            }else {
+            } else {
                 $waktu_absen_datang = '21:00:00';
                 $waktu_absen_pulang = '08:00:00';
             }
@@ -245,29 +250,35 @@ trait Kehadiran
             } else {
                 $diff = 0;
             }
-        }else{
-             $menit = 90;
+        } else {
+            $menit = 90;
         }
         return $menit;
     }
 
     public function isRhamadan($tanggal)
     {
-        // Ubah tanggal ke format yang sesuai untuk memeriksa bulan
-        $tanggal_awal_ramadan = '2025-03-01'; // Tanggal awal bulan Ramadan
-        $tanggal_akhir_ramadan = '2025-03-31'; // Tanggal akhir bulan Ramadan
+        $tahun = date('Y', strtotime($tanggal));
+        $cacheKey = 'ramadan_' . $tahun;
 
-        // Periksa apakah tanggal berada dalam rentang bulan Ramadan
-        if ($tanggal >= $tanggal_awal_ramadan && $tanggal <= $tanggal_akhir_ramadan) {
-            return true; // Jika tanggal berada dalam rentang bulan Ramadan
-        } else {
-            return false; // Jika tanggal tidak berada dalam rentang bulan Ramadan
+        // Cache data Ramadan per tahun selama 24 jam
+        $ramadan = \Illuminate\Support\Facades\Cache::remember($cacheKey, 86400, function () use ($tahun) {
+            return DB::table('tb_ramadan')
+                ->where('tahun', $tahun)
+                ->select('tanggal_mulai', 'tanggal_selesai')
+                ->first();
+        });
+
+        if (!$ramadan) {
+            return false;
         }
+
+        return $tanggal >= $ramadan->tanggal_mulai && $tanggal <= $ramadan->tanggal_selesai;
     }
 
-    public function konvertWaktu($params, $waktu, $tanggal,$waktu_default_absen,$tipe_pegawai)
+    public function konvertWaktu($params, $waktu, $tanggal, $waktu_default_absen, $tipe_pegawai)
     {
-   
+
         $diff = '';
         $selisih_waktu = '';
         $menit = 0;
@@ -277,18 +288,18 @@ trait Kehadiran
                 $waktu_tetap_absen = '';
                 if (!$this->isRhamadan($tanggal)) {
                     $waktu_tetap_absen = strtotime($waktu_default_absen);
-                }else {
+                } else {
                     $waktu_tetap_absen = strtotime('08:00:00');
                 }
 
                 $waktu_absen = strtotime($waktu);
                 $diff = $waktu_absen - $waktu_tetap_absen;
             } else {
-                
+
                 $waktu_checkout = '';
                 if (!$this->isRhamadan($tanggal)) {
                     $waktu_checkout = $waktu_default_absen;
-                }else {
+                } else {
                     $waktu_checkout = '15:00:00';
                 }
 
@@ -298,17 +309,17 @@ trait Kehadiran
                 if ($key !== false) {
                     $tipe_pegawai == 'pegawai_administratif' ? $waktu_checkout = '15:00:00' : $waktu_checkout = '13:00:00';
                 }
-                
-                if ($tipe_pegawai == 'tenaga_pendidik') {
-                        $waktu_checkout = '14:00:00';
-                        
-                        if (Carbon::parse($tanggal)->dayOfWeek === Carbon::FRIDAY) {
-                            $waktu_checkout = '11:30:00';
-                        }
 
-                        if ($this->isRhamadan($tanggal)) {
-                            $waktu_checkout = '13:30:00';
-                        }
+                if ($tipe_pegawai == 'tenaga_pendidik') {
+                    $waktu_checkout = '14:00:00';
+
+                    if (Carbon::parse($tanggal)->dayOfWeek === Carbon::FRIDAY) {
+                        $waktu_checkout = '11:30:00';
+                    }
+
+                    if ($this->isRhamadan($tanggal)) {
+                        $waktu_checkout = '13:30:00';
+                    }
                 }
 
                 if ($tipe_pegawai == 'tenaga_pendidik_non_guru') {
@@ -318,8 +329,8 @@ trait Kehadiran
                     }
 
                     if ($this->isRhamadan($tanggal)) {
-                            $waktu_checkout = '15:00:00';
-                        }
+                        $waktu_checkout = '15:00:00';
+                    }
                 }
 
                 $waktu_tetap_absen = strtotime($waktu_checkout);
@@ -332,11 +343,9 @@ trait Kehadiran
             } else {
                 $diff = 0;
             }
-        }else{
-             $menit = 90;
+        } else {
+            $menit = 90;
         }
-
-        
 
         return $menit;
     }
