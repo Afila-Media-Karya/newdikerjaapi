@@ -364,7 +364,6 @@ class AbsenController extends BaseController
 
     public function new_presensi2(PresensiRequest $request)
     {
-        dd(22);
         $data = array();
         try {
             $validation = 0;
