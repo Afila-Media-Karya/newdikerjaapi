@@ -82,8 +82,8 @@ trait Kehadiran
                 $cepatPulang = $waktuPulangDefault->diffInMinutes($waktuPulang);
                 $tanggalAbsen = Carbon::parse($data->tanggal_absen);
 
-                // Periksa apakah hari adalah Senin
-                if ($tanggalAbsen->isMonday()) {
+                // Periksa apakah hari adalah Senin dan bukan bulan Ramadan
+                if ($tanggalAbsen->isMonday() && !$this->isRhamadan($tanggalAbsen->toDateString())) {
                     // Periksa jika status_absen bukan 'apel'
                     if ($data->status !== 'apel') {
                         $jml_tidak_apel++;

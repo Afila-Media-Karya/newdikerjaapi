@@ -614,8 +614,14 @@ trait General
 
                 if (in_array($tanggalCarbon->format('l'), ['Tuesday', 'Wednesday', 'Thursday', 'Friday'])) {
                     if ($absen_per_tanggal[$tanggal]['status'] !== 'apel' && $absen_per_tanggal[$tanggal]['status'] !== 'dinas luar' && $absen_per_tanggal[$tanggal]['status'] !== 'cuti' && $absen_per_tanggal[$tanggal]['status'] !== 'dinas luar' && $absen_per_tanggal[$tanggal]['status'] !== 'sakit') {
-                        if ($tipe_pegawai == 'pegawai_administratif' && !$this->isRhamadan($tanggalCarbon->toDateString())) {
-                            $jml_tidak_apel_hari_senin += 1;
+                        if (!$this->isRhamadan($tanggalCarbon->toDateString())) {
+                            if ($tipe_pegawai == 'pegawai_administratif') {
+                                $jml_tidak_apel_hari_senin += 1;
+                            } elseif ($tipe_pegawai == 'tenaga_kesehatan') {
+                                if ($absen_per_tanggal[$tanggal]['shift'] == 'pagi' && !$this->isTanggalLibur($tanggalCarbon->toDateString(), $tipe_pegawai)) {
+                                    $jml_tidak_apel_hari_senin += 1;
+                                }
+                            }
                         }
                     }
                 }

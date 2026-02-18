@@ -19,7 +19,7 @@ class HomeController extends BaseController
     use Kehadiran;
     use Kinerja;
     use Pegawai;
-            use Option;
+    use Option;
 
     // public function pegawai(){
     //     $data = array();
@@ -55,15 +55,16 @@ class HomeController extends BaseController
     //     return $this->sendResponse($data, 'Pegawai fetch Success');
     // }
 
-    public function pegawai(){
+    public function pegawai()
+    {
         $data = array();
         try {
-            $findJabatan = $this->findJabatan(); 
+            $findJabatan = $this->findJabatan();
 
             $idPegawai = $findJabatan->id_pegawai;
             $cacheKey = 'pegawai_data_' . $idPegawai;
-            $baseTtlSeconds = 60; 
-            $ttlSeconds =  $this->addJitter($baseTtlSeconds, 5);
+            $baseTtlSeconds = 60;
+            $ttlSeconds = $this->addJitter($baseTtlSeconds, 5);
 
             // Pastikan kita memiliki ID Pegawai yang valid sebelum mencoba cache
             if (!$idPegawai) {
@@ -72,7 +73,7 @@ class HomeController extends BaseController
 
             // 2. Gunakan Cache::remember()
             $data = Cache::remember($cacheKey, $ttlSeconds, function () use ($findJabatan) {
-                
+
                 // Query Database yang Berat (Hanya dijalankan saat Cache Miss)
                 return DB::table('tb_pegawai')
                     ->select(
@@ -88,13 +89,13 @@ class HomeController extends BaseController
                         'tb_satuan_kerja.nama_satuan_kerja',
                         'tb_unit_kerja.nama_unit_kerja'
                     )
-                    ->join('tb_jabatan','tb_jabatan.id_pegawai','tb_pegawai.id')
-                    ->join("tb_master_jabatan",'tb_jabatan.id_master_jabatan','=','tb_master_jabatan.id')
-                    ->join('tb_satuan_kerja','tb_jabatan.id_satuan_kerja','=','tb_satuan_kerja.id')
-                    ->join('tb_unit_kerja','tb_jabatan.id_unit_kerja','=','tb_unit_kerja.id')
+                    ->join('tb_jabatan', 'tb_jabatan.id_pegawai', 'tb_pegawai.id')
+                    ->join("tb_master_jabatan", 'tb_jabatan.id_master_jabatan', '=', 'tb_master_jabatan.id')
+                    ->join('tb_satuan_kerja', 'tb_jabatan.id_satuan_kerja', '=', 'tb_satuan_kerja.id')
+                    ->join('tb_unit_kerja', 'tb_jabatan.id_unit_kerja', '=', 'tb_unit_kerja.id')
                     ->where('tb_jabatan.id_satuan_kerja', $findJabatan->satuan_kerja)
                     // Memfilter berdasarkan tb_pegawai.id yang didapatkan dari findJabatan
-                    ->where('tb_pegawai.id', $findJabatan->id_pegawai) 
+                    ->where('tb_pegawai.id', $findJabatan->id_pegawai)
                     ->orderBy(DB::raw("FIELD(tb_jabatan.status, 'pj', 'definitif', 'plt')"))
                     ->first();
             });
@@ -112,7 +113,7 @@ class HomeController extends BaseController
     // public function atasan(){
     //     $data = array();
     //     try {
-    
+
     //     $jabatan = DB::table('tb_jabatan')->select('tb_jabatan.id_parent')->join('tb_master_jabatan','tb_jabatan.id_master_jabatan','=','tb_master_jabatan.id')->where('id_pegawai',Auth::user()->id_pegawai)->first();
 
     //     $data = DB::table('tb_pegawai')
@@ -128,15 +129,16 @@ class HomeController extends BaseController
     //     }
     //     return $this->sendResponse($data, 'Atasan fetch Success');
     // }
-    public function atasan(){
+    public function atasan()
+    {
         $data = array();
-        
+
         // 1. Konfigurasi Caching
         $idPegawai = Auth::user()->id_pegawai;
         // Key cache harus unik berdasarkan ID Pegawai yang sedang login
         $cacheKey = 'atasan_data_' . $idPegawai;
-        $baseTtlSeconds = 60; 
-        $ttlSeconds =  $this->addJitter($baseTtlSeconds, 5);
+        $baseTtlSeconds = 60;
+        $ttlSeconds = $this->addJitter($baseTtlSeconds, 5);
 
         try {
             // 2. Gunakan Cache::remember() untuk membungkus seluruh logika akses DB
@@ -145,7 +147,7 @@ class HomeController extends BaseController
                 // Bagian A: Mencari ID Atasan (id_parent)
                 $jabatan = DB::table('tb_jabatan')
                     ->select('tb_jabatan.id_parent')
-                    ->join('tb_master_jabatan','tb_jabatan.id_master_jabatan','=','tb_master_jabatan.id')
+                    ->join('tb_master_jabatan', 'tb_jabatan.id_master_jabatan', '=', 'tb_master_jabatan.id')
                     ->where('id_pegawai', $idPegawai)
                     ->first();
 
@@ -156,20 +158,20 @@ class HomeController extends BaseController
 
                 // Bagian B: Mengambil Data Atasan
                 $atasanData = DB::table('tb_pegawai')
-                    ->select("tb_pegawai.nama",'tb_pegawai.nip',"tb_pegawai.golongan",'tb_master_jabatan.nama_jabatan','tb_satuan_kerja.nama_satuan_kerja','tb_jabatan.id as id_jabatan','tb_jabatan.status as status_jabatan','tb_unit_kerja.nama_unit_kerja')
-                    ->join('tb_jabatan','tb_jabatan.id_pegawai','tb_pegawai.id')
-                    ->join("tb_master_jabatan",'tb_jabatan.id_master_jabatan','=','tb_master_jabatan.id')
-                    ->join('tb_satuan_kerja','tb_pegawai.id_satuan_kerja','=','tb_satuan_kerja.id') // Koreksi join tb_satuan_kerja
-                    ->join('tb_unit_kerja','tb_jabatan.id_unit_kerja','=','tb_unit_kerja.id')
+                    ->select("tb_pegawai.nama", 'tb_pegawai.nip', "tb_pegawai.golongan", 'tb_master_jabatan.nama_jabatan', 'tb_satuan_kerja.nama_satuan_kerja', 'tb_jabatan.id as id_jabatan', 'tb_jabatan.status as status_jabatan', 'tb_unit_kerja.nama_unit_kerja')
+                    ->join('tb_jabatan', 'tb_jabatan.id_pegawai', 'tb_pegawai.id')
+                    ->join("tb_master_jabatan", 'tb_jabatan.id_master_jabatan', '=', 'tb_master_jabatan.id')
+                    ->join('tb_satuan_kerja', 'tb_pegawai.id_satuan_kerja', '=', 'tb_satuan_kerja.id') // Koreksi join tb_satuan_kerja
+                    ->join('tb_unit_kerja', 'tb_jabatan.id_unit_kerja', '=', 'tb_unit_kerja.id')
                     ->where('tb_jabatan.id', $jabatan->id_parent)
                     ->first();
-                
+
                 return $atasanData;
             });
 
             if (is_null($data)) {
                 // Jika data null dari cache atau DB
-                $data = (object)[]; // Kembalikan objek kosong/default jika atasan tidak ditemukan
+                $data = (object) []; // Kembalikan objek kosong/default jika atasan tidak ditemukan
             }
 
         } catch (\Exception $e) {
@@ -189,37 +191,38 @@ class HomeController extends BaseController
     //     return $this->sendResponse($data, 'Atasan fetch Success');
     // }
 
-    public function kinerja(){
+    public function kinerja()
+    {
         $data = array();
         $bulan = request('bulan');
-        
+
         // Pastikan bulan tersedia dari request
         if (!$bulan) {
             return $this->sendError('Parameter bulan diperlukan.', 'Error Validasi', 400);
         }
-        
+
         try {
             // 1. Konfigurasi Caching
             $pegawaiId = Auth::user()->id_pegawai;
             // Key cache unik berdasarkan ID Pegawai dan Bulan/Tahun
             $tahun = date('Y');
             $cacheKey = 'rekap_kinerja_' . $pegawaiId . '_' . $tahun . '_' . $bulan;
-            $baseTtlSeconds = 60; 
-            $ttlSeconds =  $this->addJitter($baseTtlSeconds, 5);
+            $baseTtlSeconds = 60;
+            $ttlSeconds = $this->addJitter($baseTtlSeconds, 5);
 
             // 2. Gunakan Cache::remember() untuk membungkus helper method yang berat
             $data = Cache::remember($cacheKey, $ttlSeconds, function () use ($bulan) {
-                
+
                 // Asumsi: $this->kinerja_pegawai($bulan) memanggil DB
                 $kinerjaData = $this->kinerja_pegawai($bulan);
-                
+
                 return $kinerjaData;
             });
 
         } catch (\Exception $e) {
-        return $this->sendError($e->getMessage(), $e->getMessage(), 200);
+            return $this->sendError($e->getMessage(), $e->getMessage(), 200);
         }
-        
+
         return $this->sendResponse($data, 'Rekap Kinerja fetch Success');
     }
 
@@ -234,46 +237,47 @@ class HomeController extends BaseController
     //     return $this->sendResponse($data, 'Atasan fetch Success');
     // }
 
-    public function kehadiran(){
+    public function kehadiran()
+    {
         $data = array();
         $bulan = request('bulan');
-        
+
         // Pastikan bulan tersedia dari request
         if (!$bulan) {
             return $this->sendError('Parameter bulan diperlukan.', 'Error Validasi', 400);
         }
-        
+
         try {
             // 1. Konfigurasi Caching
             $pegawaiId = Auth::user()->id_pegawai;
             // Key cache unik berdasarkan ID Pegawai dan Bulan/Tahun
             $tahun = date('Y');
             $cacheKey = 'rekap_kehadiran_' . $pegawaiId . '_' . $tahun . '_' . $bulan;
-            $baseTtlSeconds = 60; 
-            $ttlSeconds =  $this->addJitter($baseTtlSeconds, 5);
+            $baseTtlSeconds = 60;
+            $ttlSeconds = $this->addJitter($baseTtlSeconds, 5);
 
             // 2. Gunakan Cache::remember() untuk membungkus helper method yang berat
             $data = Cache::remember($cacheKey, $ttlSeconds, function () use ($bulan) {
-                
+
                 // Asumsi: $this->rekapDataKehadiran($bulan) memanggil DB
                 $rekapData = $this->rekapDataKehadiran($bulan);
-                
+
                 return $rekapData;
             });
 
         } catch (\Exception $e) {
-        return $this->sendError($e->getMessage(), $e->getMessage(), 200);
+            return $this->sendError($e->getMessage(), $e->getMessage(), 200);
         }
-        
+
         return $this->sendResponse($data, 'Rekap Kehadiran fetch Success');
     }
 
-    function isTanggalLibur($tanggal,$tipe_pegawai)
+    function isTanggalLibur($tanggal, $tipe_pegawai)
     {
 
         if ($tipe_pegawai == 'pegawai_administratif' || $tipe_pegawai == 'tenaga_kesehatan') {
             $tipe_pegawai = 'pegawai_administratif';
-        }else {
+        } else {
             $tipe_pegawai = 'tenaga_pendidik';
         }
 
@@ -284,7 +288,8 @@ class HomeController extends BaseController
         return !empty($libur);
     }
 
-    public function data_kehadiran_pegawai($pegawai,$tanggal_awal, $tanggal_akhir, $waktu_tetap_masuk, $waktu_tetap_keluar, $tipe_pegawai){
+    public function data_kehadiran_pegawai($pegawai, $tanggal_awal, $tanggal_akhir, $waktu_tetap_masuk, $waktu_tetap_keluar, $tipe_pegawai)
+    {
         $result = array();
         $daftar_tanggal = [];
         $current_date = new Carbon($tanggal_awal);
@@ -309,21 +314,21 @@ class HomeController extends BaseController
         $jml_tidak_apel = 0;
         $jml_tidak_apel_hari_senin = 0;
         $jml_tidak_hadir_berturut_turut = 0;
-        
+
         while ($current_date->lte(Carbon::parse($tanggal_akhir))) {
             if ($tipe_pegawai == 'pegawai_administratif') {
                 if ($current_date->dayOfWeek !== 6 && $current_date->dayOfWeek !== 0) {
-                    if (!$this->isTanggalLibur($current_date->toDateString(),$tipe_pegawai)) {
+                    if (!$this->isTanggalLibur($current_date->toDateString(), $tipe_pegawai)) {
                         $daftar_tanggal[] = $current_date->toDateString();
                     }
                 }
-            }elseif($tipe_pegawai == 'tenaga_pendidik' || $tipe_pegawai == 'tenaga_pendidik_non_guru'){
+            } elseif ($tipe_pegawai == 'tenaga_pendidik' || $tipe_pegawai == 'tenaga_pendidik_non_guru') {
                 if ($current_date->dayOfWeek !== 0) {
-                    if (!$this->isTanggalLibur($current_date->toDateString(),$tipe_pegawai)) {
+                    if (!$this->isTanggalLibur($current_date->toDateString(), $tipe_pegawai)) {
                         $daftar_tanggal[] = $current_date->toDateString();
                     }
                 }
-            }else{
+            } else {
                 $daftar_tanggal[] = $current_date->toDateString();
             }
             $current_date->addDay();
@@ -331,7 +336,7 @@ class HomeController extends BaseController
 
         // Query untuk mengambil data absen
         $data = DB::table('tb_absen')
-            ->select('tanggal_absen', 'status', 'waktu_masuk', 'waktu_keluar','shift')
+            ->select('tanggal_absen', 'status', 'waktu_masuk', 'waktu_keluar', 'shift')
             ->where('id_pegawai', $pegawai)
             ->where('validation', 1)
             ->whereBetween('tanggal_absen', [$tanggal_awal, $tanggal_akhir])
@@ -360,41 +365,55 @@ class HomeController extends BaseController
                 if ($tanggalCarbon->isMonday()) {
                     // Periksa jika status_absen bukan 'apel'
                     if (!in_array($tanggal, $this->getDateRange())) {
-                            if ($absen_per_tanggal[$tanggal]['status'] !== 'apel' && $absen_per_tanggal[$tanggal]['status'] !== 'dinas luar' && $absen_per_tanggal[$tanggal]['status'] !== 'cuti' && $absen_per_tanggal[$tanggal]['status'] !== 'dinas luar' && $absen_per_tanggal[$tanggal]['status'] !== 'sakit') {
-                                if ($tipe_pegawai == 'pegawai_administratif' && !$this->isRhamadan($tanggalCarbon->toDateString())) {
+                        if ($absen_per_tanggal[$tanggal]['status'] !== 'apel' && $absen_per_tanggal[$tanggal]['status'] !== 'dinas luar' && $absen_per_tanggal[$tanggal]['status'] !== 'cuti' && $absen_per_tanggal[$tanggal]['status'] !== 'dinas luar' && $absen_per_tanggal[$tanggal]['status'] !== 'sakit') {
+                            if ($tipe_pegawai == 'pegawai_administratif' && !$this->isRhamadan($tanggalCarbon->toDateString())) {
+                                $jml_tidak_apel += 1;
+                            } elseif ($tipe_pegawai == 'tenaga_kesehatan') {
+                                if ($absen_per_tanggal[$tanggal]['shift'] == 'pagi' && !$this->isTanggalLibur($tanggalCarbon->toDateString(), $tipe_pegawai) && !$this->isRhamadan($tanggalCarbon->toDateString())) {
                                     $jml_tidak_apel += 1;
-                                }elseif ($tipe_pegawai == 'tenaga_kesehatan') {
-                                    if ($absen_per_tanggal[$tanggal]['shift'] == 'pagi' && !$this->isTanggalLibur($tanggalCarbon->toDateString(),$tipe_pegawai) && !$this->isRhamadan($tanggalCarbon->toDateString())) {
-                                        $jml_tidak_apel += 1;
-                                    }
                                 }
                             }
-                    } 
+                        }
+                    }
                 }
 
-        
+                if (in_array($tanggalCarbon->format('l'), ['Tuesday', 'Wednesday', 'Thursday', 'Friday'])) {
+                    if ($absen_per_tanggal[$tanggal]['status'] !== 'apel' && $absen_per_tanggal[$tanggal]['status'] !== 'dinas luar' && $absen_per_tanggal[$tanggal]['status'] !== 'cuti' && $absen_per_tanggal[$tanggal]['status'] !== 'dinas luar' && $absen_per_tanggal[$tanggal]['status'] !== 'sakit') {
+                        if (!$this->isRhamadan($tanggalCarbon->toDateString())) {
+                            if ($tipe_pegawai == 'pegawai_administratif') {
+                                $jml_tidak_apel_hari_senin += 1;
+                            } elseif ($tipe_pegawai == 'tenaga_kesehatan') {
+                                if ($absen_per_tanggal[$tanggal]['shift'] == 'pagi' && !$this->isTanggalLibur($tanggalCarbon->toDateString(), $tipe_pegawai)) {
+                                    $jml_tidak_apel_hari_senin += 1;
+                                }
+                            }
+                        }
+                    }
+                }
+
+
                 if ($absen_per_tanggal[$tanggal]['status'] == 'hadir' || $absen_per_tanggal[$tanggal]['status'] == 'apel') {
                     $count_hadir += 1;
-                }elseif ($absen_per_tanggal[$tanggal]['status'] == 'sakit') {
+                } elseif ($absen_per_tanggal[$tanggal]['status'] == 'sakit') {
                     $count_sakit += 1;
-                }elseif ($absen_per_tanggal[$tanggal]['status'] == 'izin' || $absen_per_tanggal[$tanggal]['status'] == 'cuti') {
+                } elseif ($absen_per_tanggal[$tanggal]['status'] == 'izin' || $absen_per_tanggal[$tanggal]['status'] == 'cuti') {
                     $count_izin_cuti += 1;
                 }
 
-                if($absen_per_tanggal[$tanggal]['status'] == 'dinas luar'){
+                if ($absen_per_tanggal[$tanggal]['status'] == 'dinas luar') {
                     $count_dinas_luar += 1;
                 }
 
-                if($absen_per_tanggal[$tanggal]['status'] == 'apel'){
+                if ($absen_per_tanggal[$tanggal]['status'] == 'apel') {
                     $count_apel += 1;
                 }
 
                 if ($tipe_pegawai == 'pegawai_administratif') {
-                    $selisih_waktu_masuk = $this->konvertWaktu('masuk', $absen_per_tanggal[$tanggal]['waktu_masuk'],$tanggal,$waktu_tetap_masuk,$tipe_pegawai);
-                    $selisih_waktu_pulang = $this->konvertWaktu('keluar', $absen_per_tanggal[$tanggal]['waktu_keluar'],$tanggal,$waktu_tetap_keluar,$tipe_pegawai);
-                }else{
-                    $selisih_waktu_masuk = $this->konvertWaktuNakes('masuk',$absen_per_tanggal[$tanggal]['waktu_masuk'],$tanggal,$absen_per_tanggal[$tanggal]['shift'],$waktu_tetap_masuk,$tipe_pegawai);
-                    $selisih_waktu_pulang = $this->konvertWaktuNakes('keluar',$absen_per_tanggal[$tanggal]['waktu_keluar'],$tanggal,$absen_per_tanggal[$tanggal]['shift'],$waktu_tetap_keluar,$tipe_pegawai);
+                    $selisih_waktu_masuk = $this->konvertWaktu('masuk', $absen_per_tanggal[$tanggal]['waktu_masuk'], $tanggal, $waktu_tetap_masuk, $tipe_pegawai);
+                    $selisih_waktu_pulang = $this->konvertWaktu('keluar', $absen_per_tanggal[$tanggal]['waktu_keluar'], $tanggal, $waktu_tetap_keluar, $tipe_pegawai);
+                } else {
+                    $selisih_waktu_masuk = $this->konvertWaktuNakes('masuk', $absen_per_tanggal[$tanggal]['waktu_masuk'], $tanggal, $absen_per_tanggal[$tanggal]['shift'], $waktu_tetap_masuk, $tipe_pegawai);
+                    $selisih_waktu_pulang = $this->konvertWaktuNakes('keluar', $absen_per_tanggal[$tanggal]['waktu_keluar'], $tanggal, $absen_per_tanggal[$tanggal]['shift'], $waktu_tetap_keluar, $tipe_pegawai);
                 }
 
                 if ($absen_per_tanggal[$tanggal]['waktu_masuk'] !== null) {
@@ -404,7 +423,7 @@ class HomeController extends BaseController
                 if ($tanggal !== date('Y-m-d')) {
                     $jml_menit_terlambat_pulang_kerja += $selisih_waktu_pulang;
                 }
-            
+
                 if ($absen_per_tanggal[$tanggal]['status'] !== 'cuti' && $absen_per_tanggal[$tanggal]['status'] !== 'dinas luar' && $absen_per_tanggal[$tanggal]['status'] !== 'sakit') {
 
                     if ($selisih_waktu_masuk >= 1 && $selisih_waktu_masuk <= 30) {
@@ -428,7 +447,7 @@ class HomeController extends BaseController
                     }
                 }
 
-                
+
 
                 $waktu_pulang = $absen_per_tanggal[$tanggal]['waktu_keluar'];
 
@@ -438,26 +457,26 @@ class HomeController extends BaseController
                     'status' => $absen_per_tanggal[$tanggal]['status'],
                     'waktu_masuk' => $absen_per_tanggal[$tanggal]['waktu_masuk'],
                     'waktu_keluar' => $waktu_pulang,
-                    'keterangan_masuk' => $selisih_waktu_masuk > 0 ?  'Telat ' . $selisih_waktu_masuk . ' menit' : 'Tepat waktu',
-                    'keterangan_pulang' =>  $selisih_waktu_pulang > 0 ?  'Cepat ' . $selisih_waktu_pulang . ' menit' : 'Tepat waktu',
+                    'keterangan_masuk' => $selisih_waktu_masuk > 0 ? 'Telat ' . $selisih_waktu_masuk . ' menit' : 'Tepat waktu',
+                    'keterangan_pulang' => $selisih_waktu_pulang > 0 ? 'Cepat ' . $selisih_waktu_pulang . ' menit' : 'Tepat waktu',
                     'shift' => $absen_per_tanggal[$tanggal]['shift']
                 ];
             } else {
-                 $status_ = 'Tanpa Keterangan';
+                $status_ = 'Tanpa Keterangan';
                 $tanggalCarbon = Carbon::createFromFormat('Y-m-d', $tanggal);
                 if (strtotime($tanggal) > strtotime(date('Y-m-d'))) {
                     $status_ = 'Belum absen';
-                }else{
+                } else {
                     if ($tipe_pegawai == 'pegawai_administratif' || $tipe_pegawai == 'tenaga_pendidik') {
                         $jml_alfa += 1;
-                    }else{
-                         $mingguKe = $tanggalCarbon->weekOfMonth;
-                         $hari_tidak_hadir_nakes[] = ['tanggal'=>$tanggal,'minggu'=>$mingguKe];
+                    } else {
+                        $mingguKe = $tanggalCarbon->weekOfMonth;
+                        $hari_tidak_hadir_nakes[] = ['tanggal' => $tanggal, 'minggu' => $mingguKe];
                         $tanggalSebelumnya = date('Y-m-d', strtotime($tanggal . ' -1 day'));
-                        $check_last_day = DB::table('tb_absen')->where('tanggal_absen',$tanggalSebelumnya)->where('id_pegawai',$pegawai)->first();
+                        $check_last_day = DB::table('tb_absen')->where('tanggal_absen', $tanggalSebelumnya)->where('id_pegawai', $pegawai)->first();
                         if (is_null($check_last_day) || $check_last_day->shift !== 'malam') {
                             $status_ = '-';
-                        }else{
+                        } else {
                             $status_ = 'Lepas Jaga / Lepas Piket';
                         }
                     }
@@ -502,10 +521,10 @@ class HomeController extends BaseController
             $potongan_sakit = 0;
         }
 
-        $potongan_masuk_kerja = ($kmk_30 * 0.5) + ($kmk_60 * 1) + ($kmk_90 * 1.25) + ($kmk_90_keatas * 1.5); 
-        $potongan_pulang_kerja = ($cpk_30 * 0.5) + ($cpk_60 * 1) + ($cpk_90 * 1.25) + ($cpk_90_keatas * 1.5); 
+        $potongan_masuk_kerja = ($kmk_30 * 0.5) + ($kmk_60 * 1) + ($kmk_90 * 1.25) + ($kmk_90_keatas * 1.5);
+        $potongan_pulang_kerja = ($cpk_30 * 0.5) + ($cpk_60 * 1) + ($cpk_90 * 1.25) + ($cpk_90_keatas * 1.5);
         $potongan_tanpa_keterangan = $jml_alfa * 3;
-        $potongan_apel = $jml_tidak_apel * 2;
+        $potongan_apel = ($jml_tidak_apel * 2) + ($jml_tidak_apel_hari_senin * 0.25);
         $jml_potongan_kehadiran_kerja = $potongan_tanpa_keterangan + $potongan_masuk_kerja + $potongan_pulang_kerja + $potongan_apel;
 
         return [
@@ -543,14 +562,14 @@ class HomeController extends BaseController
     //     $bulan = request('bulan');
     //     $result = array();
     //     try {
-          
+
     //     $tahun = date('Y'); 
     //     $tanggal_awal = date("$tahun-$bulan-01");
     //     $tanggal_akhir = date("Y-m-t", strtotime($tanggal_awal));
     //     $pegawai = Auth::user()->id_pegawai;
 
     //     $findJabatan = $this->findJabatan();
-        
+
 
     //     $data = DB::table('tb_pegawai')
     //         ->selectRaw('
@@ -675,7 +694,7 @@ class HomeController extends BaseController
     //             $pphPsl = 0;
     //         }
     //         $tppNetto = $tppBruto - $pphPsl;
-            
+
 
     //     $result = [
     //         'kinerja_maks' => $nilai_kinerja_rp,
@@ -707,41 +726,42 @@ class HomeController extends BaseController
     //         'persen_pagu_kehadiran' => 40,
     //         'capaian_kinerja' => $nilaiKinerja,
     //     ];
-            
+
     //     } catch (\Exception $e) {
     //        return $this->sendError($e->getMessage(), $e->getMessage(), 200);
     //     }
     //     return $this->sendResponse($result, 'TPP fetch Success');
     // }
 
-    public function tpp(){
-    $result = array();
-    $bulan = request('bulan'); // Ambil dari request
-    $tahun = date('Y'); 
-    
-    // Pastikan bulan tersedia
-    if (!$bulan) {
-        return $this->sendError('Parameter bulan diperlukan.', 'Error Validasi', 400);
-    }
-    
-    try {
-        // --- Caching Block ---
-        $pegawaiId = Auth::user()->id_pegawai;
-        $tanggal_awal = date("$tahun-$bulan-01");
-        $tanggal_akhir = date("Y-m-t", strtotime($tanggal_awal));
-        $findJabatan = $this->findJabatan();
-        
-        // 1. Definisikan Cache Key Unik (Berdasarkan Pegawai, Bulan, dan Tahun)
-        $cacheKey = 'tpp_data_' . $pegawaiId . '_' . $tahun . '_' . $bulan;
-        $baseTtlSeconds = 60; 
-        $ttlSeconds =  $this->addJitter($baseTtlSeconds, 5);
-        
-        // 2. Gunakan Cache::remember() untuk Query Database Berat
-        $data = Cache::remember($cacheKey, $ttlSeconds, function () use ($tahun, $bulan, $findJabatan) {
-            
-            // Subquery (capaian_waktu) dan Main Query digabung
-            $tppData = DB::table('tb_pegawai')
-                ->selectRaw('
+    public function tpp()
+    {
+        $result = array();
+        $bulan = request('bulan'); // Ambil dari request
+        $tahun = date('Y');
+
+        // Pastikan bulan tersedia
+        if (!$bulan) {
+            return $this->sendError('Parameter bulan diperlukan.', 'Error Validasi', 400);
+        }
+
+        try {
+            // --- Caching Block ---
+            $pegawaiId = Auth::user()->id_pegawai;
+            $tanggal_awal = date("$tahun-$bulan-01");
+            $tanggal_akhir = date("Y-m-t", strtotime($tanggal_awal));
+            $findJabatan = $this->findJabatan();
+
+            // 1. Definisikan Cache Key Unik (Berdasarkan Pegawai, Bulan, dan Tahun)
+            $cacheKey = 'tpp_data_' . $pegawaiId . '_' . $tahun . '_' . $bulan;
+            $baseTtlSeconds = 60;
+            $ttlSeconds = $this->addJitter($baseTtlSeconds, 5);
+
+            // 2. Gunakan Cache::remember() untuk Query Database Berat
+            $data = Cache::remember($cacheKey, $ttlSeconds, function () use ($tahun, $bulan, $findJabatan) {
+
+                // Subquery (capaian_waktu) dan Main Query digabung
+                $tppData = DB::table('tb_pegawai')
+                    ->selectRaw('
                     tb_pegawai.id,
                     tb_pegawai.nama,
                     tb_pegawai.nip,
@@ -762,56 +782,56 @@ class HomeController extends BaseController
                     AND validation = 1 
                     AND YEAR(tanggal) = ? 
                     AND MONTH(tanggal) = ?) as capaian_waktu',
-                    [$tahun, $bulan] 
-                )
-                ->join('tb_jabatan', 'tb_jabatan.id_pegawai', 'tb_pegawai.id')
-                ->join('tb_master_jabatan', 'tb_jabatan.id_master_jabatan', '=', 'tb_master_jabatan.id')
-                ->join('tb_satuan_kerja', 'tb_pegawai.id_satuan_kerja', '=', 'tb_satuan_kerja.id')
-                ->join('tb_unit_kerja', 'tb_jabatan.id_unit_kerja', '=', 'tb_unit_kerja.id')
-                ->where('tb_pegawai.id', $findJabatan->id_pegawai)
-                ->where('tb_jabatan.id_satuan_kerja', $findJabatan->satuan_kerja)
-                ->first();
-                
-            return $tppData;
-        });
-        
-        // Cek jika data pegawai tidak ditemukan di cache/db
-        if (is_null($data)) {
-            return $this->sendError('Data pegawai TPP tidak ditemukan.', 'Gagal', 404);
-        }
+                        [$tahun, $bulan]
+                    )
+                    ->join('tb_jabatan', 'tb_jabatan.id_pegawai', 'tb_pegawai.id')
+                    ->join('tb_master_jabatan', 'tb_jabatan.id_master_jabatan', '=', 'tb_master_jabatan.id')
+                    ->join('tb_satuan_kerja', 'tb_pegawai.id_satuan_kerja', '=', 'tb_satuan_kerja.id')
+                    ->join('tb_unit_kerja', 'tb_jabatan.id_unit_kerja', '=', 'tb_unit_kerja.id')
+                    ->where('tb_pegawai.id', $findJabatan->id_pegawai)
+                    ->where('tb_jabatan.id_satuan_kerja', $findJabatan->satuan_kerja)
+                    ->first();
 
-               $child = $this->data_kehadiran_pegawai($data->id,$tanggal_awal,$tanggal_akhir,$data->waktu_masuk,$data->waktu_keluar,$data->tipe_pegawai);
-        $data->jml_potongan_kehadiran_kerja = $child['jml_potongan_kehadiran_kerja'];
-        $data->tanpa_keterangan = $child['tanpa_keterangan'];
-        $data->jml_hari_kerja = $child['jml_hari_kerja'];
-        $data->jml_hadir = $child['jml_hadir'];
-        $data->jml_sakit = $child['jml_sakit'];
-        $data->jml_cuti = $child['jml_cuti'];
-        $data->jml_apel = $child['jml_apel'];
-        $data->jml_dinas_luar = $child['jml_dinas_luar'];
-        $data->jml_tidak_apel = $child['jml_tidak_apel'];
-        $data->jml_menit_terlambat_masuk_kerja = $child['jml_menit_terlambat_masuk_kerja'];
-        $data->jml_menit_terlambat_pulang_kerja = $child['jml_menit_terlambat_pulang_kerja'];
+                return $tppData;
+            });
 
-        $jmlPaguTpp = 0;
-        $jmlNilaiKinerja = 0;
-        $jmlNilaiKehadiran = 0;
-        $jmlBpjs = 0;
-        $jmlTppBruto = 0;
-        $jmlPphPsl = 0;
-        $jmlTppNetto = 0;
-        $jmlBrutoSpm = 0;
-        $jmlIuran = 0;
-        $nilai_kinerja = 0;
-        $target_nilai = 0;
+            // Cek jika data pegawai tidak ditemukan di cache/db
+            if (is_null($data)) {
+                return $this->sendError('Data pegawai TPP tidak ditemukan.', 'Gagal', 404);
+            }
 
-        $capaian_prod = 0;
-        $target_prod = 0;
-        $nilaiKinerja = 0;
-        $nilai_kinerja = 0;
-        $keterangan = '';
-        $kelas_jabatan = '';
-        $golongan = '';
+            $child = $this->data_kehadiran_pegawai($data->id, $tanggal_awal, $tanggal_akhir, $data->waktu_masuk, $data->waktu_keluar, $data->tipe_pegawai);
+            $data->jml_potongan_kehadiran_kerja = $child['jml_potongan_kehadiran_kerja'];
+            $data->tanpa_keterangan = $child['tanpa_keterangan'];
+            $data->jml_hari_kerja = $child['jml_hari_kerja'];
+            $data->jml_hadir = $child['jml_hadir'];
+            $data->jml_sakit = $child['jml_sakit'];
+            $data->jml_cuti = $child['jml_cuti'];
+            $data->jml_apel = $child['jml_apel'];
+            $data->jml_dinas_luar = $child['jml_dinas_luar'];
+            $data->jml_tidak_apel = $child['jml_tidak_apel'];
+            $data->jml_menit_terlambat_masuk_kerja = $child['jml_menit_terlambat_masuk_kerja'];
+            $data->jml_menit_terlambat_pulang_kerja = $child['jml_menit_terlambat_pulang_kerja'];
+
+            $jmlPaguTpp = 0;
+            $jmlNilaiKinerja = 0;
+            $jmlNilaiKehadiran = 0;
+            $jmlBpjs = 0;
+            $jmlTppBruto = 0;
+            $jmlPphPsl = 0;
+            $jmlTppNetto = 0;
+            $jmlBrutoSpm = 0;
+            $jmlIuran = 0;
+            $nilai_kinerja = 0;
+            $target_nilai = 0;
+
+            $capaian_prod = 0;
+            $target_prod = 0;
+            $nilaiKinerja = 0;
+            $nilai_kinerja = 0;
+            $keterangan = '';
+            $kelas_jabatan = '';
+            $golongan = '';
 
             $golongan = '-';
             if ($data->golongan !== null && str_contains($data->golongan, '/')) {
@@ -820,113 +840,115 @@ class HomeController extends BaseController
             }
             $data->target_waktu !== null ? $target_nilai = $data->target_waktu : $target_nilai = 0;
 
-            $target_nilai > 0 ? $nilai_kinerja = ( intval($data->capaian_waktu) / $target_nilai ) * 100 : $nilai_kinerja = 0;
+            $target_nilai > 0 ? $nilai_kinerja = (intval($data->capaian_waktu) / $target_nilai) * 100 : $nilai_kinerja = 0;
             if ($nilai_kinerja > 100) {
                 $nilai_kinerja = 100;
             }
 
 
             $nilaiPaguTpp = $data->pagu_tpp * $data->pembayaran / 100;
-            $nilai_kinerja_rp = $nilaiPaguTpp* 60/100; 
-            $nilaiKinerja = $nilai_kinerja * $nilai_kinerja_rp / 100; 
+            $nilai_kinerja_rp = $nilaiPaguTpp * 60 / 100;
+            $nilaiKinerja = $nilai_kinerja * $nilai_kinerja_rp / 100;
             $persentaseKehadiran = 40 * $nilaiPaguTpp / 100;
             $nilaiKehadiran = $persentaseKehadiran * $data->jml_potongan_kehadiran_kerja / 100;
             $jumlahKehadiran = $persentaseKehadiran - $nilaiKehadiran;
             $bpjs = 1 * $nilaiPaguTpp / 100;
-            $data->tanpa_keterangan > 3  ? $keterangan = 'TMS'  : $keterangan = 'MS';
+            $data->tanpa_keterangan > 3 ? $keterangan = 'TMS' : $keterangan = 'MS';
             $tppBruto = 0;
             $iuran = 4 * $nilaiPaguTpp / 100;
             if ($keterangan === 'TMS') {
                 $tppBruto = 0;
-                $bpjs=0;
-                $iuran=0;
-                $brutoSpm=0;
-            }else{
+                $bpjs = 0;
+                $iuran = 0;
+                $brutoSpm = 0;
+            } else {
                 $tppBruto = $nilaiKinerja + $jumlahKehadiran - $bpjs;
                 $brutoSpm = $nilaiKinerja + $jumlahKehadiran + $iuran;
             }
 
-            if (strstr( $golongan, 'IV' )) {
+            if (strstr($golongan, 'IV')) {
                 $pphPsl = 15 * $tppBruto / 100;
-            }elseif (strstr( $golongan, 'III' )) {
-                    $pphPsl = 5 * $tppBruto / 100;
-            }else{
+            } elseif (strstr($golongan, 'III')) {
+                $pphPsl = 5 * $tppBruto / 100;
+            } else {
                 $pphPsl = 0;
             }
             $tppNetto = $tppBruto - $pphPsl;
-            
 
-        $result = [
-            'kinerja_maks' => $nilai_kinerja_rp,
-            'persen_kinerja_maks' => round($nilai_kinerja,2),
-            'kehadiran_maks' => $persentaseKehadiran,
-            'persen_kehadiran_maks' => $data->jml_potongan_kehadiran_kerja,
-            'potongan_kinerja' => $nilaiPaguTpp * (100 - $nilai_kinerja) / 100,
-            'persen_potongan_kinerja' => round((100 - $nilai_kinerja),2),
-            'potongan_kehadiran' => $nilaiKehadiran,
-            'persentase_potongan_kehadiran' => $data->jml_potongan_kehadiran_kerja,
-            'bpjs' => $bpjs,
-            'pphPsl' => $pphPsl,
-            'potongan_jkn_pph' => $pphPsl + $bpjs,
-            'nilai_bruto' => $tppBruto,
-            'tpp_bulan_ini' => $tppNetto,
-            'tppNetto' => $tppNetto,
-            'brutoSpm' => $brutoSpm,
-            'nilaiPaguTpp' => $nilaiPaguTpp,
-            'iuran' => $nilaiPaguTpp * 4 / 100,
-            'jml_hari_kerja' => $data->jml_hari_kerja,
-            'jml_hadir' => $data->jml_hadir,
-            'jml_sakit' => $data->jml_sakit,
-            'jml_cuti' => $data->jml_cuti,
-            'jml_dinas_luar' => $data->jml_dinas_luar,
-            'jml_tidak_apel' => $data->jml_tidak_apel,
-            'jml_apel' => $data->jml_apel,
-            'tanpa_keterangan' => $data->tanpa_keterangan,
-            'persen_pagu_kinerja' => 60,
-            'persen_pagu_kehadiran' => 40,
-            'capaian_kinerja' => $nilaiKinerja,
-        ];
-            
-    } catch (\Exception $e) {
-       return $this->sendError($e->getMessage(), $e->getMessage(), 200);
+
+            $result = [
+                'kinerja_maks' => $nilai_kinerja_rp,
+                'persen_kinerja_maks' => round($nilai_kinerja, 2),
+                'kehadiran_maks' => $persentaseKehadiran,
+                'persen_kehadiran_maks' => $data->jml_potongan_kehadiran_kerja,
+                'potongan_kinerja' => $nilaiPaguTpp * (100 - $nilai_kinerja) / 100,
+                'persen_potongan_kinerja' => round((100 - $nilai_kinerja), 2),
+                'potongan_kehadiran' => $nilaiKehadiran,
+                'persentase_potongan_kehadiran' => $data->jml_potongan_kehadiran_kerja,
+                'bpjs' => $bpjs,
+                'pphPsl' => $pphPsl,
+                'potongan_jkn_pph' => $pphPsl + $bpjs,
+                'nilai_bruto' => $tppBruto,
+                'tpp_bulan_ini' => $tppNetto,
+                'tppNetto' => $tppNetto,
+                'brutoSpm' => $brutoSpm,
+                'nilaiPaguTpp' => $nilaiPaguTpp,
+                'iuran' => $nilaiPaguTpp * 4 / 100,
+                'jml_hari_kerja' => $data->jml_hari_kerja,
+                'jml_hadir' => $data->jml_hadir,
+                'jml_sakit' => $data->jml_sakit,
+                'jml_cuti' => $data->jml_cuti,
+                'jml_dinas_luar' => $data->jml_dinas_luar,
+                'jml_tidak_apel' => $data->jml_tidak_apel,
+                'jml_apel' => $data->jml_apel,
+                'tanpa_keterangan' => $data->tanpa_keterangan,
+                'persen_pagu_kinerja' => 60,
+                'persen_pagu_kehadiran' => 40,
+                'capaian_kinerja' => $nilaiKinerja,
+            ];
+
+        } catch (\Exception $e) {
+            return $this->sendError($e->getMessage(), $e->getMessage(), 200);
+        }
+        return $this->sendResponse($result, 'TPP fetch Success');
     }
-    return $this->sendResponse($result, 'TPP fetch Success');
-}
 
-    public function waktu_server(){
+    public function waktu_server()
+    {
         $data = array();
         try {
             $currentTime = now();
             $data = [
-                'date' => $currentTime->toDateString(), 
+                'date' => $currentTime->toDateString(),
                 'time' => $currentTime->toTimeString(),
             ];
         } catch (\Exception $e) {
-           return $this->sendError($e->getMessage(), $e->getMessage(), 200);
+            return $this->sendError($e->getMessage(), $e->getMessage(), 200);
         }
         return $this->sendResponse($data, 'Waktu Server Success');
     }
 
-    public function sasaran_kinerja(){
+    public function sasaran_kinerja()
+    {
         $data = array();
         $pegawai_dinilai = 0;
         try {
             if ($this->findJabatanUser()) {
                 $data = DB::table('tb_skp')
-                ->join('tb_aspek_skp','tb_aspek_skp.id_skp','=','tb_skp.id')
-                ->where('tb_skp.id_jabatan',$this->findJabatanUser()->jabatan)
-                ->selectRaw('COALESCE(SUM(tb_aspek_skp.target), 0) as target_sasaran')
-                ->selectRaw('COALESCE(SUM(tb_aspek_skp.realisasi), 0) as target_pencapaian')
-                ->first();
+                    ->join('tb_aspek_skp', 'tb_aspek_skp.id_skp', '=', 'tb_skp.id')
+                    ->where('tb_skp.id_jabatan', $this->findJabatanUser()->jabatan)
+                    ->selectRaw('COALESCE(SUM(tb_aspek_skp.target), 0) as target_sasaran')
+                    ->selectRaw('COALESCE(SUM(tb_aspek_skp.realisasi), 0) as target_pencapaian')
+                    ->first();
 
-                $pegawai_dinilai = DB::table('tb_jabatan') 
-                ->where('id_parent', '=', $this->findJabatanUser()->jabatan) 
-                ->count();
+                $pegawai_dinilai = DB::table('tb_jabatan')
+                    ->where('id_parent', '=', $this->findJabatanUser()->jabatan)
+                    ->count();
             }
 
 
 
-            $sasaran =  0;
+            $sasaran = 0;
             $realisasi = 0;
 
             if (is_array($data) && count($data) > 0) {
@@ -946,24 +968,25 @@ class HomeController extends BaseController
             $data = [
                 'sasaran' => $sasaran,
                 'realisasi' => $realisasi,
-                'kinerja' => $sasaran > 0 ? round(($realisasi / $sasaran) * 100,2) : 0,
+                'kinerja' => $sasaran > 0 ? round(($realisasi / $sasaran) * 100, 2) : 0,
                 'pegawai_dinilai' => $pegawai_dinilai
             ];
         } catch (\Exception $e) {
             return $this->sendError($e->getMessage(), $e->getMessage(), 200);
-        } 
+        }
 
         return $this->sendResponse($data, 'Atasan fetch Success');
     }
 
-    public function pengumuman(){
+    public function pengumuman()
+    {
         $data = array();
         try {
-            $data = DB::table('tb_pengumuman')->select('id','judul','deskripsi')->get();
+            $data = DB::table('tb_pengumuman')->select('id', 'judul', 'deskripsi')->get();
         } catch (\Exception $e) {
-           return $this->sendError($e->getMessage(), $e->getMessage(), 200);
+            return $this->sendError($e->getMessage(), $e->getMessage(), 200);
         }
         return $this->sendResponse($data, 'List Pengumuman fetched Success');
     }
-   
+
 }
