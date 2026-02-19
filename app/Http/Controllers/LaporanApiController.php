@@ -453,12 +453,12 @@ class LaporanApiController extends Controller
         $type = request('type');
         $pegawai_params = request('pegawai') ? request('pegawai') : Auth::user()->id_pegawai;
         $bulan = request('bulan');
-        $role = hasRole();
-        $role_check = 0;
+        // $role = hasRole();
+        // $role_check = 0;
 
-        if ($role['guard'] == 'web' && $role['role'] == '2') {
-            $role_check = 1;
-        }
+        $role_check = 1;
+        // if ($role['guard'] == 'web' && $role['role'] == '2') {
+        // }
 
         $jabatan_req = request("status");
         $pegawai = $this->findPegawai($pegawai_params, $jabatan_req, $role_check);
