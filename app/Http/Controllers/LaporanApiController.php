@@ -508,7 +508,7 @@ class LaporanApiController extends Controller
         $spreadsheet->getActiveSheet()->getPageMargins()->setBottom(0.3);
 
         $sheet->setCellValue('A1', 'LAPORAN KINERJA PEGAWAI (AKTIVITAS)')->mergeCells('A1:J1');
-        $sheet->setCellValue('A2', strtoupper(konvertBulan($bulan)))->mergeCells('A2:J2');
+        $sheet->setCellValue('A2', strtoupper($this->konvertBulan($bulan)))->mergeCells('A2:J2');
         $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
         $sheet->getStyle('A2')->getAlignment()->setHorizontal('center');
 
@@ -746,7 +746,7 @@ class LaporanApiController extends Controller
             $writer = new Xlsx($spreadsheet);
             header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
-            $bulan_tmt = strtoupper(konvertBulan($bulan));
+            $bulan_tmt = strtoupper($this->konvertBulan($bulan));
             $filename = "LAPORAN KINERJA {$pegawai->nama} BULAN {$bulan_tmt}.xlsx";
             header("Content-Disposition: attachment;filename=\"$filename\"");
         } else {
@@ -815,7 +815,7 @@ class LaporanApiController extends Controller
         $spreadsheet->getActiveSheet()->getPageMargins()->setBottom(0.3);
 
         $sheet->setCellValue('A1', 'LAPORAN KINERJA PEGAWAI (AKTIVITAS)')->mergeCells('A1:J1');
-        $sheet->setCellValue('A2', strtoupper(konvertBulan($bulan)))->mergeCells('A2:J2');
+        $sheet->setCellValue('A2', strtoupper($this->konvertBulan($bulan)))->mergeCells('A2:J2');
         $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
         $sheet->getStyle('A2')->getAlignment()->setHorizontal('center');
 
@@ -1237,6 +1237,27 @@ class LaporanApiController extends Controller
             'perkalian_pph' => $perkalian_pph,
             'terlambat_cepat_pulang' => $data->jml_menit_terlambat_masuk_kerja + $data->jml_menit_terlambat_pulang_kerja,
         ];
+    }
+
+    public function konvertBulan($bulan)
+    {
+        $array = [
+            date('Y'),
+            'Januari',
+            'Februari',
+            'Maret',
+            'April',
+            'Mei',
+            'Juni',
+            'Juli',
+            'Agustus',
+            'September',
+            'Oktober',
+            'November',
+            'Desember'
+        ];
+
+        return $array[$bulan];
     }
 
 }
