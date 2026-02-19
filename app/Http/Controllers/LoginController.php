@@ -354,8 +354,12 @@ class LoginController extends BaseController
                     $data->waktu_apel = Carbon::parse($tanggal_hari_ini)->dayOfWeek === Carbon::MONDAY ? '07:15:00' : '07:40:00';
                 } elseif ($data->tipe_pegawai == 'tenaga_kesehatan') {
                     $data->waktu_masuk = '08:00:00';
-                    $data->waktu_keluar = '13:00:00';
+                    $data->waktu_keluar = date('N') == 5 ? '11:30:00' : '13:00:00';
                     $data->waktu_apel = '08:00:00';
+                } elseif ($data->tipe_pegawai == 'tenaga_pendidik' || $data->tipe_pegawai == 'tenaga_pendidik_non_guru') {
+                    $data->waktu_masuk = '07:00:00';
+                    $data->waktu_keluar = date('N') == 5 ? '11:00:00' : '13:00:00';
+                    $data->waktu_apel = '07:30:00';
                 }
             }
 
@@ -370,6 +374,119 @@ class LoginController extends BaseController
                 }
             } else {
                 // Jika Ramadan, logika di atas sudah mengatur.
+            }
+
+            // ========================================================
+            // Ambil Batas Waktu Absen dari tabel (fallback ke default)
+            // ========================================================
+            $hariIni = (int) date('N'); // 1=Senin, 7=Minggu
+            $isRamadan = $this->isRhamadan($tanggal_hari_ini);
+            $isRamadan = false;
+            $tipePegawai = $data->tipe_pegawai;
+
+            if ($isRamadan) {
+                // -------------------------------------------------------
+                // RAMADAN: Langsung pakai waktu Ramadan per tipe_pegawai
+                // -------------------------------------------------------
+                $batasWaktu = [
+                    'is_ramadan' => true,
+                    'kategori' => 'ramadan',
+                    'batas_awal_masuk' => '07:30:00',
+                    'batas_akhir_masuk' => '17:00:00',
+                    'batas_tepat_waktu_masuk' => '08:00:00',
+                    'batas_awal_pulang' => '15:00:00',
+                    'batas_akhir_pulang' => '23:00:00',
+                    'batas_tepat_waktu_pulang' => '15:00:00',
+                    'batas_awal_apel' => '07:30:00',
+                    'batas_akhir_apel' => '07:40:00',
+                    'batas_awal_apel_hari_besar' => '07:00:00',
+                    'batas_akhir_apel_hari_besar' => '08:00:00',
+                ];
+
+                if ($tipePegawai == 'pegawai_administratif') {
+                    $batasWaktu['batas_tepat_waktu_masuk'] = '08:00:00';
+                    $batasWaktu['batas_tepat_waktu_pulang'] = $hariIni == 5 ? '15:30:00' : '15:00:00';
+                    $batasWaktu['batas_awal_pulang'] = $batasWaktu['batas_tepat_waktu_pulang'];
+                    $batasWaktu['batas_akhir_apel'] = $hariIni == 1 ? '07:15:00' : '07:40:00';
+                } elseif ($tipePegawai == 'tenaga_kesehatan') {
+                    $batasWaktu['batas_tepat_waktu_masuk'] = '08:00:00';
+                    $batasWaktu['batas_tepat_waktu_pulang'] = '13:00:00';
+                    $batasWaktu['batas_awal_pulang'] = '13:00:00';
+                    $batasWaktu['batas_awal_apel'] = '07:30:00';
+                    $batasWaktu['batas_akhir_apel'] = '08:00:00';
+                } elseif ($tipePegawai == 'tenaga_pendidik' || $tipePegawai == 'tenaga_pendidik_non_guru') {
+                    $batasWaktu['batas_awal_masuk'] = '07:00:00';
+                    $batasWaktu['batas_tepat_waktu_masuk'] = '07:30:00';
+                    $batasWaktu['batas_tepat_waktu_pulang'] = '14:00:00';
+                    $batasWaktu['batas_awal_pulang'] = '14:00:00';
+                }
+
+                $data->batas_waktu = (object) $batasWaktu;
+
+            } else {
+                // -------------------------------------------------------
+                // NON-RAMADAN: Ambil dari DB, fallback ke default
+                // -------------------------------------------------------
+
+                // Default values per tipe_pegawai
+                $defaultBatasAwalMasuk = '07:30:00';
+                $defaultBatasAkhirMasuk = '17:00:00';
+                $defaultBatasTepatWaktuMasuk = $data->waktu_masuk;
+                $defaultBatasAwalPulang = $data->waktu_keluar;
+                $defaultBatasAkhirPulang = '23:00:00';
+                $defaultBatasTepatWaktuPulang = $data->waktu_keluar;
+                $defaultBatasAwalApel = '07:30:00';
+                $defaultBatasAkhirApel = $data->waktu_apel;
+                $defaultBatasAwalApelHariBesar = '07:00:00';
+                $defaultBatasAkhirApelHariBesar = '08:00:00';
+
+                if ($tipePegawai == 'tenaga_pendidik' || $tipePegawai == 'tenaga_pendidik_non_guru') {
+                    $defaultBatasTepatWaktuMasuk = '08:00:00';
+                    $defaultBatasTepatWaktuPulang = '14:00:00';
+                    $defaultBatasAwalPulang = '14:00:00';
+                    $defaultBatasAkhirApel = '07:30:00';
+                }
+
+                // Query tb_jam_kerja (cached)
+                $cacheKeyJamKerja = "jam_kerja_{$tipePegawai}_{$hariIni}_reguler";
+                $jamKerja = Cache::remember($cacheKeyJamKerja, 3600, function () use ($tipePegawai, $hariIni) {
+                    return DB::table('tb_jam_kerja')
+                        ->where('tipe_pegawai', $tipePegawai)
+                        ->where('hari', $hariIni)
+                        ->where('kategori', 'reguler')
+                        ->where('is_active', 1)
+                        ->first();
+                });
+
+                // Query tb_jam_apel reguler & hari_besar (cached)
+                $cacheKeyJamApel = "jam_apel_{$tipePegawai}";
+                $jamApelAll = Cache::remember($cacheKeyJamApel, 3600, function () use ($tipePegawai) {
+                    return DB::table('tb_jam_apel')
+                        ->where('tipe_pegawai', $tipePegawai)
+                        ->whereIn('jenis', ['reguler', 'hari_besar'])
+                        ->where('is_active', 1)
+                        ->get()
+                        ->keyBy('jenis');
+                });
+
+                $jamApelReguler = $jamApelAll->get('reguler');
+                $jamApelHariBesar = $jamApelAll->get('hari_besar');
+
+                // Susun: DB value → fallback default
+                $data->batas_waktu = (object) [
+                    'is_ramadan' => false,
+                    'kategori' => 'reguler',
+                    'batas_awal_masuk' => $jamKerja->batas_awal_masuk ?? $defaultBatasAwalMasuk,
+                    'batas_akhir_masuk' => $jamKerja->batas_akhir_masuk ?? $defaultBatasAkhirMasuk,
+                    'batas_tepat_waktu_masuk' => $jamKerja->jam_masuk ?? $defaultBatasTepatWaktuMasuk,
+                    'batas_awal_pulang' => $jamKerja->batas_awal_pulang ?? $defaultBatasAwalPulang,
+                    'batas_akhir_pulang' => $jamKerja->batas_akhir_pulang ?? $defaultBatasAkhirPulang,
+                    'batas_tepat_waktu_pulang' => $jamKerja->jam_keluar ?? $defaultBatasTepatWaktuPulang,
+                    'batas_awal_apel' => $jamApelReguler->batas_awal ?? $defaultBatasAwalApel,
+                    'batas_akhir_apel' => $jamApelReguler->batas_akhir ?? $defaultBatasAkhirApel,
+                    'batas_awal_apel_hari_besar' => $jamApelHariBesar->batas_awal ?? $defaultBatasAwalApelHariBesar,
+                    'batas_akhir_apel_hari_besar' => $jamApelHariBesar->batas_akhir ?? $defaultBatasAkhirApelHariBesar,
+                ];
             }
 
         } catch (\Exception $e) {
