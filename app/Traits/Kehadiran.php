@@ -259,15 +259,12 @@ trait Kehadiran
     public function isRhamadan($tanggal)
     {
         $tahun = date('Y', strtotime($tanggal));
-        $cacheKey = 'ramadan_' . $tahun;
+        // $cacheKey = 'ramadan_' . $tahun;
 
-        // Cache data Ramadan per tahun selama 24 jam
-        $ramadan = \Illuminate\Support\Facades\Cache::remember($cacheKey, 86400, function () use ($tahun) {
-            return DB::table('tb_ramadan')
-                ->where('tahun', $tahun)
-                ->select('tanggal_mulai', 'tanggal_selesai')
-                ->first();
-        });
+        $ramadan = DB::table('tb_ramadan')
+            ->where('tahun', $tahun)
+            ->select('tanggal_mulai', 'tanggal_selesai')
+            ->first();
 
         if (!$ramadan) {
             return false;
