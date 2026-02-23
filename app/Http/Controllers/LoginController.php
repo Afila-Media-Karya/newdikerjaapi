@@ -473,8 +473,13 @@ class LoginController extends BaseController
             // });
             $jamApelAll = DB::table('tb_jam_apel')
                 ->where('tipe_pegawai', $tipePegawai)
-                ->whereIn('jenis', [$jenisApelReguler, $jenisApelHariBesar])
                 ->where('is_active', 1)
+                ->where(function ($query) use ($hariIni, $jenisApelReguler, $jenisApelHariBesar) {
+                    $query->where(function ($q) use ($hariIni, $jenisApelReguler) {
+                        $q->where('jenis', $jenisApelReguler)
+                            ->where('hari', $hariIni);
+                    })->orWhere('jenis', $jenisApelHariBesar);
+                })
                 ->get()
                 ->keyBy('jenis');
 
@@ -488,7 +493,9 @@ class LoginController extends BaseController
                 'is_ramadan' => $isRamadan,
                 'kategori' => $kategori,
                 'hari' => $namaHari[$hariIni - 1],
+                'hari_number' => $hariIni,
                 'is_hari_kerja' => $isHariKerja,
+                'is_apel' => $jamApelReguler ? 1 : 0,
                 'batas_awal_masuk' => $jamKerja->batas_awal_masuk ?? $defaultBatasAwalMasuk,
                 'batas_akhir_masuk' => $jamKerja->batas_akhir_masuk ?? $defaultBatasAkhirMasuk,
                 'batas_tepat_waktu_masuk' => $jamKerja->jam_masuk ?? $defaultBatasTepatWaktuMasuk,
