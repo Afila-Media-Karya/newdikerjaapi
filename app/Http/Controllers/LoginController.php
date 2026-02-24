@@ -445,16 +445,33 @@ class LoginController extends BaseController
 
             // -------------------------------------------------------
             // Query tb_jam_kerja berdasarkan kategori (ramadan/reguler)
+            // Untuk tenaga_kesehatan: ambil semua shift, lainnya ambil first
             // -------------------------------------------------------
             $cacheKeyJamKerja = "jam_kerja_{$tipePegawai}_{$hariIni}_{$kategori}";
-            $jamKerja = Cache::remember($cacheKeyJamKerja, 3600, function () use ($tipePegawai, $hariIni, $kategori) {
-                return DB::table('tb_jam_kerja')
-                    ->where('tipe_pegawai', $tipePegawai)
-                    ->where('hari', $hariIni)
-                    //->where('kategori', $kategori)
-                    ->where('is_active', 1)
-                    ->first();
-            });
+
+            if ($tipePegawai === 'tenaga_kesehatan') {
+                // Ambil semua shift sekaligus
+                $jamKerjaAll = Cache::remember($cacheKeyJamKerja, 3600, function () use ($tipePegawai, $hariIni, $kategori) {
+                    return DB::table('tb_jam_kerja')
+                        ->where('tipe_pegawai', $tipePegawai)
+                        ->where('hari', $hariIni)
+                        ->where('is_active', 1)
+                        ->orderBy('jam_masuk')
+                        ->get();
+                });
+                // jamKerja tetap diisi dengan shift pertama (sebagai fallback untuk field batas tunggal)
+                $jamKerja = $jamKerjaAll->first();
+            } else {
+                $jamKerjaAll = null;
+                $jamKerja = Cache::remember($cacheKeyJamKerja, 3600, function () use ($tipePegawai, $hariIni, $kategori) {
+                    return DB::table('tb_jam_kerja')
+                        ->where('tipe_pegawai', $tipePegawai)
+                        ->where('hari', $hariIni)
+                        //->where('kategori', $kategori)
+                        ->where('is_active', 1)
+                        ->first();
+                });
+            }
 
             // -------------------------------------------------------
             // Query tb_jam_apel berdasarkan jenis sesuai kategori
@@ -489,7 +506,7 @@ class LoginController extends BaseController
             // -------------------------------------------------------
             // Susun batas_waktu: DB value → fallback default
             // -------------------------------------------------------
-            $data->batas_waktu = (object) [
+            $batasWaktu = [
                 'is_ramadan' => $isRamadan,
                 'kategori' => $kategori,
                 'hari' => $namaHari[$hariIni - 1],
@@ -507,6 +524,25 @@ class LoginController extends BaseController
                 'batas_awal_apel_hari_besar' => $jamApelHariBesar->batas_awal ?? $defaultBatasAwalApelHariBesar,
                 'batas_akhir_apel_hari_besar' => $jamApelHariBesar->batas_akhir ?? $defaultBatasAkhirApelHariBesar,
             ];
+
+            // Untuk tenaga_kesehatan: sertakan semua shift hari ini
+            if ($tipePegawai === 'tenaga_kesehatan' && $jamKerjaAll && $jamKerjaAll->isNotEmpty()) {
+                $batasWaktu['jumlah_shift'] = $jamKerjaAll->first()->jumlah_shift ?? $jamKerjaAll->count();
+                $batasWaktu['shifts'] = $jamKerjaAll->map(function ($shift) {
+                    return [
+                        'shift' => $shift->shift,
+                        'jumlah_shift' => $shift->jumlah_shift,
+                        'jam_masuk' => $shift->jam_masuk,
+                        'jam_keluar' => $shift->jam_keluar,
+                        'batas_awal_masuk' => $shift->batas_awal_masuk,
+                        'batas_akhir_masuk' => $shift->batas_akhir_masuk,
+                        'batas_awal_pulang' => $shift->batas_awal_pulang,
+                        'batas_akhir_pulang' => $shift->batas_akhir_pulang,
+                    ];
+                })->values()->toArray();
+            }
+
+            $data->batas_waktu = (object) $batasWaktu;
 
         } catch (\Exception $e) {
             return $this->sendError($e->getMessage(), $e->getMessage(), 200);
