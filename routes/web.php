@@ -18,8 +18,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::prefix('set-laporan')->group(function () {
-    Route::get('/laporan-kehadiran-pegawai', [LaporanApiController::class, 'export_pegawai_bulan'])->name('setlaporan.laporan.kehadiran.export');
-    Route::get('/laporan-kinerja-pegawai', [LaporanApiController::class, 'export_to_kinerja_pegawai'])->name('setlaporan.laporan.kinerja.export');
-    Route::get('/laporan-tpp-pegawai', [LaporanApiController::class, 'export_to_tpp_pegawai'])->name('setlaporan.laporan.tpp.export');
-});
+Route::prefix('set-laporan')
+    ->middleware(['throttle:10,1']) // maks 10 request per menit per IP
+    ->group(function () {
+        Route::get('/laporan-kehadiran-pegawai', [LaporanApiController::class, 'export_pegawai_bulan'])->name('setlaporan.laporan.kehadiran.export');
+        Route::get('/laporan-kinerja-pegawai', [LaporanApiController::class, 'export_to_kinerja_pegawai'])->name('setlaporan.laporan.kinerja.export');
+        Route::get('/laporan-tpp-pegawai', [LaporanApiController::class, 'export_to_tpp_pegawai'])->name('setlaporan.laporan.tpp.export');
+    });
