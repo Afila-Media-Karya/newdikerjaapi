@@ -540,6 +540,9 @@ class LoginController extends BaseController
                         'batas_akhir_pulang' => $shift->batas_akhir_pulang,
                     ];
                 })->values()->toArray();
+            } else {
+                $batasWaktu['jumlah_shift'] = 0;
+                $batasWaktu['shifts'] = [];
             }
 
             $data->batas_waktu = (object) $batasWaktu;
