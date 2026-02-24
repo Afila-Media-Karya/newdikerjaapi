@@ -523,6 +523,8 @@ class LoginController extends BaseController
                 'batas_akhir_apel' => $jamApelReguler->batas_akhir ?? $defaultBatasAkhirApel,
                 'batas_awal_apel_hari_besar' => $jamApelHariBesar->batas_awal ?? $defaultBatasAwalApelHariBesar,
                 'batas_akhir_apel_hari_besar' => $jamApelHariBesar->batas_akhir ?? $defaultBatasAkhirApelHariBesar,
+                'batas_waktu_istirahat_mulai' => $data->waktu_istirahat,
+                'batas_waktu_istirahat_selesai' => $data->waktu_masuk_istirahat,
             ];
 
             // Untuk tenaga_kesehatan: sertakan semua shift hari ini
