@@ -451,37 +451,26 @@ class LoginController extends BaseController
 
             if ($tipePegawai === 'tenaga_kesehatan') {
                 // Ambil semua shift sekaligus
-                // $jamKerjaAll = Cache::remember($cacheKeyJamKerja, 3600, function () use ($tipePegawai, $hariIni, $kategori) {
-                //     return DB::table('tb_jam_kerja')
-                //         ->where('tipe_pegawai', $tipePegawai)
-                //         ->where('hari', $hariIni)
-                //         ->where('is_active', 1)
-                //         ->orderBy('jam_masuk')
-                //         ->get();
-                // });
-                $jamKerjaAll = DB::table('tb_jam_kerja')
-                    ->where('tipe_pegawai', $tipePegawai)
-                    ->where('hari', $hariIni)
-                    ->where('is_active', 1)
-                    ->orderBy('jam_masuk')
-                    ->get();
+                $jamKerjaAll = Cache::remember($cacheKeyJamKerja, 3600, function () use ($tipePegawai, $hariIni, $kategori) {
+                    return DB::table('tb_jam_kerja')
+                        ->where('tipe_pegawai', $tipePegawai)
+                        ->where('hari', $hariIni)
+                        ->where('is_active', 1)
+                        ->orderBy('jam_masuk')
+                        ->get();
+                });
                 // jamKerja tetap diisi dengan shift pertama (sebagai fallback untuk field batas tunggal)
                 $jamKerja = $jamKerjaAll->first();
             } else {
                 $jamKerjaAll = null;
-                // $jamKerja = Cache::remember($cacheKeyJamKerja, 3600, function () use ($tipePegawai, $hariIni, $kategori) {
-                //     return DB::table('tb_jam_kerja')
-                //         ->where('tipe_pegawai', $tipePegawai)
-                //         ->where('hari', $hariIni)
-                //         //->where('kategori', $kategori)
-                //         ->where('is_active', 1)
-                //         ->first();
-                // });
-                $jamKerja = DB::table('tb_jam_kerja')
-                    ->where('tipe_pegawai', $tipePegawai)
-                    ->where('hari', $hariIni)
-                    ->where('is_active', 1)
-                    ->first();
+                $jamKerja = Cache::remember($cacheKeyJamKerja, 3600, function () use ($tipePegawai, $hariIni, $kategori) {
+                    return DB::table('tb_jam_kerja')
+                        ->where('tipe_pegawai', $tipePegawai)
+                        ->where('hari', $hariIni)
+                        //->where('kategori', $kategori)
+                        ->where('is_active', 1)
+                        ->first();
+                });
             }
 
             // -------------------------------------------------------
