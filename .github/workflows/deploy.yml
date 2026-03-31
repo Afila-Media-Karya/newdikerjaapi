@@ -18,11 +18,18 @@ jobs:
 
       - name: Add Servers to Known Hosts
         run: |
-          # This prevents the "Are you sure you want to connect?" prompt
+          # 1. Create the .ssh directory first
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          
+          # 2. Now run your loop to scan the IPs
           IFS=',' read -ra ADDR <<< "${{ secrets.SERVER_IPS }}"
           for i in "${ADDR[@]}"; do
             ssh-keyscan -H $i >> ~/.ssh/known_hosts
           done
+          
+          # 3. Secure the known_hosts file
+          chmod 644 ~/.ssh/known_hosts
 
       - name: Run Ansible Playbook
         run: |
