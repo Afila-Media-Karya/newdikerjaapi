@@ -33,5 +33,5 @@ jobs:
 
       - name: Run Ansible Playbook
         run: |
-          ansible-playbook -i /root/ansible/simasn_servers.ini /root/ansible/simasn_dikerja_deploy.yml \
+          ansible-playbook -i simasn_servers.ini simasn_dikerja_deploy.yml \
           -e "github_repository=${{ github.repository }}"
