@@ -13,9 +13,9 @@ trait Kehadiran
         $tanggalAwal = Carbon::create($tahun, $bulan, 1)->startOfMonth();
         $tanggalAkhir = Carbon::create($tahun, $bulan, 1)->endOfMonth();
 
-        if ($tanggalAwal->isCurrentMonth()) {
-            $tanggalAkhir = Carbon::now();
-        }
+        // if ($tanggalAwal->isCurrentMonth()) {
+        //     $tanggalAkhir = Carbon::now();
+        // }
 
 
         $jumlahHari = 0;

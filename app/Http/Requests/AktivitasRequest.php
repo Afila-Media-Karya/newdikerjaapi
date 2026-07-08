@@ -25,7 +25,7 @@ class AktivitasRequest extends FormRequest
             'tanggal' => 'required|date',
             'id_sasaran' => 'required',
             'aktivitas' => 'required',
-            // 'satuan' => 'required',
+            'satuan' => 'required',
             'waktu' => 'required|numeric',
             'hasil' => 'required|numeric',
             'keterangan' => 'required'

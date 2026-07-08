@@ -94,7 +94,6 @@ class GpsController extends BaseController
         // Pastikan Anda mendapatkan data longitude dan latitude dari request
         $longitudes = $request->input('longitudes');
         $latitudes = $request->input('latitudes');
-        // dd($longitudes, $latitudes); // Hapus dd() setelah pengujian
 
         $data = User::where('users.id', Auth::user()->id)
             ->select('tb_lokasi.latitude as lat','tb_lokasi.longitude as long')
