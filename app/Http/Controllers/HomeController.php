@@ -64,7 +64,7 @@ class HomeController extends BaseController
             $idPegawai = $findJabatan->id_pegawai;
             $cacheKey = 'pegawai_data_' . $idPegawai;
             $baseTtlSeconds = 60;
-            $ttlSeconds =  $this->addJitter($baseTtlSeconds, 5);
+            $ttlSeconds = $this->addJitter($baseTtlSeconds, 5);
 
             // Pastikan kita memiliki ID Pegawai yang valid sebelum mencoba cache
             if (!$idPegawai) {
@@ -137,7 +137,7 @@ class HomeController extends BaseController
         // Key cache harus unik berdasarkan ID Pegawai yang sedang login
         $cacheKey = 'atasan_data_' . $idPegawai;
         $baseTtlSeconds = 60;
-        $ttlSeconds =  $this->addJitter($baseTtlSeconds, 5);
+        $ttlSeconds = $this->addJitter($baseTtlSeconds, 5);
 
         try {
             // 2. Gunakan Cache::remember() untuk membungkus seluruh logika akses DB
@@ -170,7 +170,7 @@ class HomeController extends BaseController
 
             if (is_null($data)) {
                 // Jika data null dari cache atau DB
-                $data = (object)[]; // Kembalikan objek kosong/default jika atasan tidak ditemukan
+                $data = (object) []; // Kembalikan objek kosong/default jika atasan tidak ditemukan
             }
         } catch (\Exception $e) {
             return $this->sendError($e->getMessage(), $e->getMessage(), 200);
@@ -206,7 +206,7 @@ class HomeController extends BaseController
             $tahun = date('Y');
             $cacheKey = 'rekap_kinerja_' . $pegawaiId . '_' . $tahun . '_' . $bulan;
             $baseTtlSeconds = 60;
-            $ttlSeconds =  $this->addJitter($baseTtlSeconds, 5);
+            $ttlSeconds = $this->addJitter($baseTtlSeconds, 5);
 
             // 2. Gunakan Cache::remember() untuk membungkus helper method yang berat
             $data = Cache::remember($cacheKey, $ttlSeconds, function () use ($bulan) {
@@ -251,7 +251,7 @@ class HomeController extends BaseController
             $tahun = date('Y');
             $cacheKey = 'rekap_kehadiran_' . $pegawaiId . '_' . $tahun . '_' . $bulan;
             $baseTtlSeconds = 60;
-            $ttlSeconds =  $this->addJitter($baseTtlSeconds, 5);
+            $ttlSeconds = $this->addJitter($baseTtlSeconds, 5);
 
             // 2. Gunakan Cache::remember() untuk membungkus helper method yang berat
             $data = Cache::remember($cacheKey, $ttlSeconds, function () use ($bulan) {
@@ -373,6 +373,20 @@ class HomeController extends BaseController
                     }
                 }
 
+                if (in_array($tanggalCarbon->format('l'), ['Tuesday', 'Wednesday', 'Thursday', 'Friday'])) {
+                    if ($absen_per_tanggal[$tanggal]['status'] !== 'apel' && $absen_per_tanggal[$tanggal]['status'] !== 'dinas luar' && $absen_per_tanggal[$tanggal]['status'] !== 'cuti' && $absen_per_tanggal[$tanggal]['status'] !== 'dinas luar' && $absen_per_tanggal[$tanggal]['status'] !== 'sakit') {
+                        if (!$this->isRhamadan($tanggalCarbon->toDateString())) {
+                            if ($tipe_pegawai == 'pegawai_administratif') {
+                                $jml_tidak_apel_hari_senin += 1;
+                            } elseif ($tipe_pegawai == 'tenaga_kesehatan') {
+                                if ($absen_per_tanggal[$tanggal]['shift'] == 'pagi' && !$this->isTanggalLibur($tanggalCarbon->toDateString(), $tipe_pegawai)) {
+                                    $jml_tidak_apel_hari_senin += 1;
+                                }
+                            }
+                        }
+                    }
+                }
+
 
                 if ($absen_per_tanggal[$tanggal]['status'] == 'hadir' || $absen_per_tanggal[$tanggal]['status'] == 'apel') {
                     $count_hadir += 1;
@@ -439,8 +453,8 @@ class HomeController extends BaseController
                     'status' => $absen_per_tanggal[$tanggal]['status'],
                     'waktu_masuk' => $absen_per_tanggal[$tanggal]['waktu_masuk'],
                     'waktu_keluar' => $waktu_pulang,
-                    'keterangan_masuk' => $selisih_waktu_masuk > 0 ?  'Telat ' . $selisih_waktu_masuk . ' menit' : 'Tepat waktu',
-                    'keterangan_pulang' =>  $selisih_waktu_pulang > 0 ?  'Cepat ' . $selisih_waktu_pulang . ' menit' : 'Tepat waktu',
+                    'keterangan_masuk' => $selisih_waktu_masuk > 0 ? 'Telat ' . $selisih_waktu_masuk . ' menit' : 'Tepat waktu',
+                    'keterangan_pulang' => $selisih_waktu_pulang > 0 ? 'Cepat ' . $selisih_waktu_pulang . ' menit' : 'Tepat waktu',
                     'shift' => $absen_per_tanggal[$tanggal]['shift']
                 ];
             } else {
@@ -506,7 +520,7 @@ class HomeController extends BaseController
         $potongan_masuk_kerja = ($kmk_30 * 0.5) + ($kmk_60 * 1) + ($kmk_90 * 1.25) + ($kmk_90_keatas * 1.5);
         $potongan_pulang_kerja = ($cpk_30 * 0.5) + ($cpk_60 * 1) + ($cpk_90 * 1.25) + ($cpk_90_keatas * 1.5);
         $potongan_tanpa_keterangan = $jml_alfa * 3;
-        $potongan_apel = $jml_tidak_apel * 2;
+        $potongan_apel = ($jml_tidak_apel * 2) + ($jml_tidak_apel_hari_senin * 0.25);
         $jml_potongan_kehadiran_kerja = $potongan_tanpa_keterangan + $potongan_masuk_kerja + $potongan_pulang_kerja + $potongan_apel;
 
         return [
@@ -736,15 +750,14 @@ class HomeController extends BaseController
             // 1. Definisikan Cache Key Unik (Berdasarkan Pegawai, Bulan, dan Tahun)
             $cacheKey = 'tpp_data_' . $pegawaiId . '_' . $tahun . '_' . $bulan;
             $baseTtlSeconds = 60;
-            $ttlSeconds =  $this->addJitter($baseTtlSeconds, 5);
+            $ttlSeconds = $this->addJitter($baseTtlSeconds, 5);
 
             // 2. Gunakan Cache::remember() untuk Query Database Berat
             $data = Cache::remember($cacheKey, $ttlSeconds, function () use ($tahun, $bulan, $findJabatan) {
 
                 // Subquery (capaian_waktu) dan Main Query digabung
                 $tppData = DB::table('tb_pegawai')
-                    ->selectRaw(
-                        '
+                    ->selectRaw('
                     tb_pegawai.id,
                     tb_pegawai.nama,
                     tb_pegawai.nip,
@@ -836,7 +849,7 @@ class HomeController extends BaseController
             $nilaiKehadiran = $persentaseKehadiran * $data->jml_potongan_kehadiran_kerja / 100;
             $jumlahKehadiran = $persentaseKehadiran - $nilaiKehadiran;
             $bpjs = 1 * $nilaiPaguTpp / 100;
-            $data->tanpa_keterangan > 3  ? $keterangan = 'TMS'  : $keterangan = 'MS';
+            $data->tanpa_keterangan > 3 ? $keterangan = 'TMS' : $keterangan = 'MS';
             $tppBruto = 0;
             $iuran = 4 * $nilaiPaguTpp / 100;
             if ($keterangan === 'TMS') {
@@ -889,6 +902,7 @@ class HomeController extends BaseController
                 'persen_pagu_kehadiran' => 40,
                 'capaian_kinerja' => $nilaiKinerja,
             ];
+
         } catch (\Exception $e) {
             return $this->sendError($e->getMessage(), $e->getMessage(), 200);
         }
@@ -930,7 +944,7 @@ class HomeController extends BaseController
 
 
 
-            $sasaran =  0;
+            $sasaran = 0;
             $realisasi = 0;
 
             if (is_array($data) && count($data) > 0) {
@@ -970,4 +984,5 @@ class HomeController extends BaseController
         }
         return $this->sendResponse($data, 'List Pengumuman fetched Success');
     }
+
 }

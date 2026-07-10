@@ -1,0 +1,18 @@
+---
+- name: Deploy Main Branch SIM ASN DIKERJA
+  hosts: web_servers
+  gather_facts: no
+  tasks:
+    - name: Pull latest code from GitHub
+      git:
+        repo: 'git@github.com:Afila-Media-Karya/newdikerjaapi.git'
+        dest: /var/www/newdikerjaapi
+        version: main
+        force: yes
+
+    # Optional: Reload Nginx to clear cache or apply configs
+    - name: Reload Nginx
+      become: yes
+      service:
+        name: nginx
+        state: reloaded

@@ -1,0 +1,38 @@
+name: Remote Deploy via Ansible
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Add Servers to Known Hosts
+        run: |
+          # 1. Create the .ssh directory first
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          
+          # 2. Now run your loop to scan the IPs
+          IFS=',' read -ra ADDR <<< "${{ secrets.SERVER_IPS }}"
+          for i in "${ADDR[@]}"; do
+            ssh-keyscan -H $i >> ~/.ssh/known_hosts
+          done
+          
+          # 3. Secure the known_hosts file
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Run Ansible Playbook
+        run: |
+          ansible-playbook -i simasn_servers.ini simasn_dikerja_deploy.yml \
+          -e "github_repository=${{ github.repository }}"
