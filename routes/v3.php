@@ -6,6 +6,7 @@ use App\Http\Controllers\AbsenController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AktivitasController;
+use App\Http\Controllers\Api\CobaController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LayananController;
 use App\Http\Controllers\DokumenPribadiController;
@@ -16,7 +17,7 @@ use App\Http\Controllers\GpsController;
     Route::post('/row-insert-user', [SinkronisasiController::class, 'insert_user']);
     Route::post('/push-master-aktivitas', [SinkronisasiController::class, 'push_master_aktivitas']);
     Route::post('/push-tpp-jabatan', [SinkronisasiController::class, 'push_nilai_tpp_ke_jabatan']);
-
+    Route::get('/coba-test', [CobaController::class, 'coba_test']);
     
     Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::middleware('my-throttle')->group(function () {

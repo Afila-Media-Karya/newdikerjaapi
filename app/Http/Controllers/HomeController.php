@@ -103,7 +103,6 @@ class HomeController extends BaseController
             if (!$data) {
                 return $this->sendError('Data pegawai tidak ditemukan', 'Gagal', 404);
             }
-
         } catch (\Exception $e) {
             return $this->sendError($e->getMessage(), $e->getMessage(), 200);
         }
@@ -173,7 +172,6 @@ class HomeController extends BaseController
                 // Jika data null dari cache atau DB
                 $data = (object) []; // Kembalikan objek kosong/default jika atasan tidak ditemukan
             }
-
         } catch (\Exception $e) {
             return $this->sendError($e->getMessage(), $e->getMessage(), 200);
         }
@@ -218,7 +216,6 @@ class HomeController extends BaseController
 
                 return $kinerjaData;
             });
-
         } catch (\Exception $e) {
             return $this->sendError($e->getMessage(), $e->getMessage(), 200);
         }
@@ -264,7 +261,6 @@ class HomeController extends BaseController
 
                 return $rekapData;
             });
-
         } catch (\Exception $e) {
             return $this->sendError($e->getMessage(), $e->getMessage(), 200);
         }
